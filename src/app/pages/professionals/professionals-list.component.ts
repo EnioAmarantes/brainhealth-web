@@ -32,7 +32,7 @@ import { map, Observable } from 'rxjs';
           <div class="professional-card">
             <div class="professional-header">
               <div class="professional-info">
-                <h3>{{ professional.name }}</h3>
+                <h3>{{ professional.fullName }}</h3>
                 <div class="specialties">
                   <span class="specialty" *ngFor="let specialty of professional.specialties">
                     {{ specialty }}

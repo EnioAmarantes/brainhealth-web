@@ -27,7 +27,7 @@ import { Observable } from 'rxjs';
 
       <app-card [elevated]="true" *ngIf="professional$ | async as professional">
         <div class="professional-detail">
-          <h1>{{ professional.name }}</h1>
+          <h1>{{ professional.fullName }}</h1>
           <div class="specialties">
             <span class="specialty" *ngFor="let specialty of professional.specialties">
               {{ specialty }}

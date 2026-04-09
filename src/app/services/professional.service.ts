@@ -139,7 +139,7 @@ export class ProfessionalService {
    * Obtém perfil detalhado do profissional
    */
   getProfessionalProfile(professionalId: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${professionalId}/profile`);
+    return this.http.get<any>(`${this.apiUrl}/${professionalId}`);
   }
 
   /**

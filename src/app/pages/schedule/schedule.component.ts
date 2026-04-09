@@ -31,7 +31,7 @@ import { Observable, BehaviorSubject } from 'rxjs';
       <app-card [elevated]="true">
         <div *ngIf="professional$ | async as professional" class="schedule-content">
           <div class="professional-info">
-            <h2>{{ professional.name }}</h2>
+            <h2>{{ professional.fullName }}</h2>
             <p class="specialty">{{ professional.specialties.join(', ') }}</p>
           </div>
 

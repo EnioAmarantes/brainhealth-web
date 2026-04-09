@@ -3,7 +3,7 @@
  */
 export interface Professional {
   id: string;
-  name: string;
+  fullName: string;
   email: string;
   crp?: string; // Registro profissional
   specialties: string[];
