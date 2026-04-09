@@ -43,6 +43,7 @@ import { BehaviorSubject } from 'rxjs';
                 type="password"
                 formControlName="password"
                 placeholder="Sua senha segura"
+                (keypress)="($event.key === 'Enter') ? onSubmit() : null"
                 [attr.aria-label]="'Senha'"
               />
               <span class="error" *ngIf="loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched">
