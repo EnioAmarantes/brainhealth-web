@@ -8,17 +8,16 @@ import { User, UserType } from '@app/models/auth.model';
 import { take, filter } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-dashboard',
-  standalone: true,
-  imports: [CommonModule, LoadingIndicatorComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
+    selector: 'app-dashboard',
+    imports: [CommonModule, LoadingIndicatorComponent],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
     <div class="dashboard-loading">
       <app-loading-indicator></app-loading-indicator>
       <p>Carregando seu dashboard...</p>
     </div>
   `,
-  styles: [`
+    styles: [`
     .dashboard-loading {
       display: flex;
       flex-direction: column;

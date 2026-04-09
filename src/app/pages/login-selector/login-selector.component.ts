@@ -6,15 +6,14 @@ import { QuestionnaireScreenComponent } from '../questionnaire/questionnaire-scr
 import { LoginComponent } from '../login/login.component';
 
 @Component({
-  selector: 'app-login-selector',
-  standalone: true,
-  imports: [
-    CommonModule, 
-    LoginComponent, 
-    QuestionnaireScreenComponent
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
+    selector: 'app-login-selector',
+    imports: [
+        CommonModule,
+        LoginComponent,
+        QuestionnaireScreenComponent
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
     <div class="container">
       <!-- Questionnaire Section (60%) -->
       <div class="questionnaire-section">
@@ -30,7 +29,7 @@ import { LoginComponent } from '../login/login.component';
       </div>
     </div>
   `,
-  styles: [`
+    styles: [`
     :host {
       display: block;
       margin: 0;

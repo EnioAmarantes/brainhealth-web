@@ -8,18 +8,17 @@ import { Professional } from '@app/models/professional.model';
 import { Observable, BehaviorSubject } from 'rxjs';
 
 @Component({
-  selector: 'app-schedule',
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    CardComponent,
-    PrimaryButtonComponent,
-    SecondaryButtonComponent,
-    LoadingIndicatorComponent
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
+    selector: 'app-schedule',
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        CardComponent,
+        PrimaryButtonComponent,
+        SecondaryButtonComponent,
+        LoadingIndicatorComponent
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
     <div class="schedule-container">
       <div class="schedule-header">
         <h1>Agendar Consulta</h1>
@@ -86,7 +85,7 @@ import { Observable, BehaviorSubject } from 'rxjs';
       <app-loading-indicator></app-loading-indicator>
     </div>
   `,
-  styles: [`
+    styles: [`
     .schedule-container {
       min-height: 100vh;
       padding: 40px 20px;

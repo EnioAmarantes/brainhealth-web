@@ -10,18 +10,17 @@ import { catchError, finalize } from 'rxjs/operators';
 import { of, BehaviorSubject } from 'rxjs';
 
 @Component({
-  selector: 'app-questionnaire',
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    CardComponent,
-    PrimaryButtonComponent,
-    SecondaryButtonComponent,
-    LoadingIndicatorComponent
-  ],
-  changeDetection: ChangeDetectionStrategy.Default,
-  template: `
+    selector: 'app-questionnaire',
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        CardComponent,
+        PrimaryButtonComponent,
+        SecondaryButtonComponent,
+        LoadingIndicatorComponent
+    ],
+    changeDetection: ChangeDetectionStrategy.Default,
+    template: `
     <!-- Step 1: Unified Questionnaire + Free Text -->
     <ng-container *ngIf="currentStep === 'questionnaire'">
       <div class="questionnaire-container">
@@ -233,7 +232,7 @@ import { of, BehaviorSubject } from 'rxjs';
       </div>
     </ng-container>
   `,
-  styles: [`
+    styles: [`
     :host {
       display: block;
       margin: 0;

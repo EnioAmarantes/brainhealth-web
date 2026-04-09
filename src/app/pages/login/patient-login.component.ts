@@ -8,11 +8,10 @@ import { finalize } from 'rxjs/operators';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
-  selector: 'app-patient-login',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CardComponent, PrimaryButtonComponent, SecondaryButtonComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
+    selector: 'app-patient-login',
+    imports: [CommonModule, ReactiveFormsModule, CardComponent, PrimaryButtonComponent, SecondaryButtonComponent],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
     <div class="login-container">
       <div class="login-box">
         <app-card [elevated]="true">
@@ -80,7 +79,7 @@ import { BehaviorSubject } from 'rxjs';
       </div>
     </div>
   `,
-  styles: [`
+    styles: [`
     .login-container {
       min-height: 100vh;
       display: flex;

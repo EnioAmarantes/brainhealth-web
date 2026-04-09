@@ -7,11 +7,10 @@ import { Observable, BehaviorSubject } from 'rxjs';
 import { User } from '@app/models/auth.model';
 
 @Component({
-  selector: 'app-patient-dashboard',
-  standalone: true,
-  imports: [CommonModule, PrimaryButtonComponent, SecondaryButtonComponent, CardComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
+    selector: 'app-patient-dashboard',
+    imports: [CommonModule, PrimaryButtonComponent, SecondaryButtonComponent, CardComponent],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
     <div class="patient-dashboard">
       <!-- Header -->
       <header class="dashboard-header">
@@ -128,7 +127,7 @@ import { User } from '@app/models/auth.model';
       </main>
     </div>
   `,
-  styles: [`
+    styles: [`
     .patient-dashboard {
       min-height: 100vh;
       padding: 40px 20px;

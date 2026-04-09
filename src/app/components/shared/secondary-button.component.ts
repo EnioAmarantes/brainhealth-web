@@ -2,11 +2,10 @@ import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from 
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-secondary-button',
-  standalone: true,
-  imports: [CommonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
+    selector: 'app-secondary-button',
+    imports: [CommonModule],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
     <button
       [disabled]="disabled || isLoading"
       [class.loading]="isLoading"
@@ -21,7 +20,7 @@ import { CommonModule } from '@angular/common';
       </span>
     </button>
   `,
-  styles: [`
+    styles: [`
     .secondary-button {
       width: 100%;
       padding: 14px 20px;

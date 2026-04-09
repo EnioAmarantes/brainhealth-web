@@ -10,11 +10,10 @@ import { finalize } from 'rxjs/operators';
 import { UserType } from '@app/models/auth.model';
 
 @Component({
-  selector: 'app-professional-dashboard',
-  standalone: true,
-  imports: [CommonModule, PrimaryButtonComponent, SecondaryButtonComponent, CardComponent, LoadingIndicatorComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
+    selector: 'app-professional-dashboard',
+    imports: [CommonModule, PrimaryButtonComponent, SecondaryButtonComponent, CardComponent, LoadingIndicatorComponent],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
     <div class="professional-dashboard">
       <!-- Header -->
       <header class="dashboard-header">
@@ -228,7 +227,7 @@ import { UserType } from '@app/models/auth.model';
       </main>
     </div>
   `,
-  styles: [`
+    styles: [`
     :host {
       display: block;
       background: #f5f5f5;

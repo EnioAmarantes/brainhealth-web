@@ -7,17 +7,16 @@ import { Professional } from '@app/models/professional.model';
 import { Observable } from 'rxjs';
 
 @Component({
-  selector: 'app-professional-detail',
-  standalone: true,
-  imports: [
-    CommonModule,
-    CardComponent,
-    PrimaryButtonComponent,
-    SecondaryButtonComponent,
-    LoadingIndicatorComponent
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
+    selector: 'app-professional-detail',
+    imports: [
+        CommonModule,
+        CardComponent,
+        PrimaryButtonComponent,
+        SecondaryButtonComponent,
+        LoadingIndicatorComponent
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
     <div class="detail-container">
       <div class="detail-header">
         <app-secondary-button
@@ -65,7 +64,7 @@ import { Observable } from 'rxjs';
       <app-loading-indicator></app-loading-indicator>
     </div>
   `,
-  styles: [`
+    styles: [`
     .detail-container {
       min-height: 100vh;
       padding: 40px 20px;

@@ -7,17 +7,16 @@ import { Professional, PaginatedResult } from '@app/models/professional.model';
 import { map, Observable } from 'rxjs';
 
 @Component({
-  selector: 'app-professionals-list',
-  standalone: true,
-  imports: [
-    CommonModule,
-    CardComponent,
-    PrimaryButtonComponent,
-    SecondaryButtonComponent,
-    LoadingIndicatorComponent
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
+    selector: 'app-professionals-list',
+    imports: [
+        CommonModule,
+        CardComponent,
+        PrimaryButtonComponent,
+        SecondaryButtonComponent,
+        LoadingIndicatorComponent
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
     <div class="professionals-container">
       <div class="professionals-header">
         <h1>Profissionais Recomendados</h1>
@@ -86,7 +85,7 @@ import { map, Observable } from 'rxjs';
       <app-loading-indicator></app-loading-indicator>
     </div>
   `,
-  styles: [`
+    styles: [`
     .professionals-container {
       min-height: 100vh;
       padding: 40px 20px;

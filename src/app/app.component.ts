@@ -3,14 +3,13 @@ import { RouterOutlet } from '@angular/router';
 import { LoadingIndicatorComponent } from '@app/components/shared';
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [RouterOutlet, LoadingIndicatorComponent],
-  template: `
+    selector: 'app-root',
+    imports: [RouterOutlet, LoadingIndicatorComponent],
+    template: `
     <app-loading-indicator></app-loading-indicator>
     <router-outlet></router-outlet>
   `,
-  styles: [`
+    styles: [`
     :host {
       display: block;
       width: 100%;

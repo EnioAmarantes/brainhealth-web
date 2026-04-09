@@ -4,11 +4,10 @@ import { LoadingService, LoadingState } from '@app/services/loading.service';
 import { Observable } from 'rxjs';
 
 @Component({
-  selector: 'app-loading-indicator',
-  standalone: true,
-  imports: [CommonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
+    selector: 'app-loading-indicator',
+    imports: [CommonModule],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
     <div class="loading-container" *ngIf="(loading$ | async) as loadingState">
       <div class="loading-overlay" [class.show]="loadingState.isLoading">
         <div class="loading-spinner">
@@ -20,7 +19,7 @@ import { Observable } from 'rxjs';
       </div>
     </div>
   `,
-  styles: [`
+    styles: [`
     .loading-container {
       position: fixed;
       top: 0;
