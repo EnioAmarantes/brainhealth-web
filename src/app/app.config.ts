@@ -1,4 +1,4 @@
-import { ApplicationConfig, importProvidersFrom, APP_ID } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, APP_ID, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withNavigationErrorHandler } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
@@ -13,6 +13,7 @@ const navigationErrorHandler = (error: unknown) => {
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideZoneChangeDetection({ eventCoalescing: true }),
     { provide: APP_ID, useValue: 'brain-health-app' },
     provideRouter(
       routes,
