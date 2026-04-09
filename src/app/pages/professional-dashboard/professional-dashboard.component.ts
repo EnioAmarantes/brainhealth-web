@@ -131,7 +131,7 @@ import { UserType } from '@app/models/auth.model';
 
                 <div class="detail-box">
                   <label class="detail-label">💵 Taxa da Consulta</label>
-                  <p class="detail-value">R$ {{ professional.consultationPrice | number: '1.2-2' }}/hora</p>
+                  <p class="detail-value">R$ {{ professional.consultationPrice | number: '1.2-2' }} / hora</p>
                 </div>
 
                 <div class="detail-box">
@@ -149,7 +149,7 @@ import { UserType } from '@app/models/auth.model';
               <h2 class="section-title">Informações Profissionais Detalhadas</h2>
               <app-primary-button
                 label="Atualizar Dados"
-                (onClick)="editProfessionalDetails(professional.id)"
+                (onClick)="editProfessionalDetails()"
                 class="edit-btn"
               ></app-primary-button>
             </div>
@@ -342,11 +342,11 @@ export class ProfessionalDashboardComponent implements OnInit {
   }
 
   editProfile(professionalId: string): void {
-    this.router.navigate(['/professional/edit', professionalId]);
+    this.router.navigate(['/professional/edit/profile']);
   }
 
-  editProfessionalDetails(professionalId: string): void {
-    this.router.navigate(['/professional/edit-details', professionalId]);
+  editProfessionalDetails(): void {
+    this.router.navigate(['/professional/edit/profile']);
   }
 
   viewPatients(): void {

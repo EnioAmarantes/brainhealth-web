@@ -71,4 +71,35 @@ export class ProfessionalMapper {
       endTime: '18:00',
     };
   }
+
+  /**
+   * Mapeia objetos Local para o formato esperado pelo Backend
+   */
+  static mapToBackend(professional: any): any {
+    return {
+      fullName: professional.fullName,
+      email: professional.email,
+      registrationNumber: professional.crp,
+      specialties: Array.isArray(professional.specialties)
+        ? professional.specialties.join(', ')
+        : professional.specialties,
+      bio: professional.description,
+      profilePhotoUrl: professional.photo,
+      availableForNewPatients: professional.availableForNewPatients,
+      consultationPrice: professional.consultationPrice,
+      address: professional.address?.street,
+      city: professional.address?.city,
+      state: professional.address?.state,
+      zipCode: professional.address?.zipCode,
+      country: professional.address?.country,
+      profile: {
+        yearsOfExperience: professional.experience,
+        availabilitySchedule: JSON.stringify({
+          days: professional.availability?.days || [],
+          startTime: professional.availability?.startTime || '09:00',
+          endTime: professional.availability?.endTime || '18:00',
+        }),
+      },
+    };
+  }
 }

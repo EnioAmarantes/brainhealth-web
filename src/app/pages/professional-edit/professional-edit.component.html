@@ -1,0 +1,559 @@
+<div class="edit-container">
+  <!-- Loading Indicator -->
+  <app-loading-indicator *ngIf="isLoading"></app-loading-indicator>
+
+  <div class="edit-wrapper" *ngIf="!isLoading && professional">
+    <!-- Header -->
+    <div class="edit-header">
+      <div class="header-content">
+        <div class="header-text">
+          <h1>Editar Perfil</h1>
+          <p class="subtitle">Mantenha seus dados atualizados para melhor atender seus pacientes</p>
+        </div>
+        <div class="progress-indicator">
+          <span class="progress-text">{{ formProgress }}% completo</span>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="formProgress"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div class="alerts-section" *ngIf="errorMessage || successMessage">
+      <div class="alert alert-error" *ngIf="errorMessage" [@slideInDown]>
+        <span class="alert-icon">⚠️</span>
+        <span>{{ errorMessage }}</span>
+      </div>
+      <div class="alert alert-success" *ngIf="successMessage" [@slideInDown]>
+        <span class="alert-icon">✓</span>
+        <span>{{ successMessage }}</span>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="editForm" (ngSubmit)="onSubmit()" class="edit-form">
+      <!-- Section Navigation -->
+      <div class="section-navigation">
+        <button
+          type="button"
+          class="section-btn"
+          [class.active]="currentSection === 1"
+          (click)="currentSection = 1"
+        >
+          <span class="section-number">1</span>
+          <span class="section-name">Básico</span>
+        </button>
+        <button
+          type="button"
+          class="section-btn"
+          [class.active]="currentSection === 2"
+          (click)="currentSection = 2"
+        >
+          <span class="section-number">2</span>
+          <span class="section-name">Profissional</span>
+        </button>
+        <button
+          type="button"
+          class="section-btn"
+          [class.active]="currentSection === 3"
+          (click)="currentSection = 3"
+        >
+          <span class="section-number">3</span>
+          <span class="section-name">Endereço</span>
+        </button>
+        <button
+          type="button"
+          class="section-btn"
+          [class.active]="currentSection === 4"
+          (click)="currentSection = 4"
+        >
+          <span class="section-number">4</span>
+          <span class="section-name">Disponibilidade</span>
+        </button>
+      </div>
+
+      <!-- SECTION 1: BASIC INFO -->
+      <ng-container *ngIf="currentSection === 1">
+      <app-card class="form-section">
+        <div class="section-header">
+          <h2>Informações Básicas</h2>
+          <p class="section-description">Seu nome e informações de contato principais</p>
+        </div>
+
+        <!-- Photo Upload -->
+        <div class="form-group photo-group">
+          <label class="photo-label">Foto de Perfil</label>
+          <div class="photo-container">
+            <div class="photo-preview" *ngIf="photoPreview">
+              <img [src]="photoPreview" alt="Preview" />
+              <button
+                type="button"
+                class="remove-photo-btn"
+                (click)="removePhoto()"
+                title="Remover foto"
+              >
+                ✕
+              </button>
+            </div>
+            <div class="photo-upload" *ngIf="!photoPreview">
+              <input
+                type="file"
+                #photoInput
+                (change)="onPhotoSelect($event)"
+                accept="image/*"
+                class="photo-input"
+                aria-label="Selecionar foto de perfil"
+              />
+              <label for="photoInput" class="upload-label">
+                <div class="upload-icon">📸</div>
+                <p>Clique para carregar foto</p>
+                <small>Máx. 5MB, formatos: JPG, PNG</small>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Full Name -->
+        <div class="form-group">
+          <label for="fullName" class="form-label">
+            Nome completo *
+            <span class="helper-text">(como aparece em documentos)</span>
+          </label>
+          <input
+            id="fullName"
+            type="text"
+            formControlName="fullName"
+            class="form-input"
+            [class.has-error]="editForm.get('fullName')?.touched && editForm.get('fullName')?.errors"
+            placeholder="Seu nome completo"
+            required
+          />
+          <span class="error-message" *ngIf="getFieldError('fullName')">
+            {{ getFieldError('fullName') }}
+          </span>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label for="email" class="form-label">
+            Email *
+            <span class="helper-text">(será usado para notificações)</span>
+          </label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            class="form-input"
+            [class.has-error]="editForm.get('email')?.touched && editForm.get('email')?.errors"
+            placeholder="seu@email.com"
+            required
+          />
+          <span class="error-message" *ngIf="getFieldError('email')">
+            {{ getFieldError('email') }}
+          </span>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="section-actions">
+          <app-secondary-button
+            label="← Voltar"
+            (onClick)="onCancel()"
+          ></app-secondary-button>
+          <app-primary-button
+            label="Próximo: Profissional →"
+            (onClick)="nextSection()"
+          ></app-primary-button>
+        </div>
+      </app-card>
+      </ng-container>
+
+      <!-- SECTION 2: PROFESSIONAL INFO -->
+      <ng-container *ngIf="currentSection === 2">
+      <app-card class="form-section">
+        <div class="section-header">
+          <h2>Informações Profissionais</h2>
+          <p class="section-description">Detalhes sobre sua especialização e experiência</p>
+        </div>
+
+        <!-- CRP -->
+        <div class="form-group">
+          <label for="crp" class="form-label">
+            CRP
+            <span class="helper-text">(Conselho Regional de Psicologia - opcional)</span>
+          </label>
+          <input
+            id="crp"
+            type="text"
+            formControlName="crp"
+            class="form-input"
+            [class.has-error]="editForm.get('crp')?.touched && editForm.get('crp')?.errors"
+            placeholder="123456/XX"
+          />
+          <span class="error-message" *ngIf="getFieldError('crp')">
+            {{ getFieldError('crp') }}
+          </span>
+        </div>
+
+        <!-- Specialties -->
+        <div class="form-group">
+          <div class="label-with-action">
+            <label class="form-label">
+              Especialidades *
+              <span class="helper-text">(selecione pelo menos uma)</span>
+            </label>
+            <button type="button" class="add-btn" (click)="addSpecialty()">+ Adicionar</button>
+          </div>
+
+          <div formArrayName="specialties" class="specialties-list">
+            <div *ngFor="let specialty of specialtiesArray.controls; let i = index" class="specialty-item">
+              <input
+                type="text"
+                [formControlName]="i"
+                class="form-input specialty-input"
+                placeholder="Ex: Psicologia Clínica"
+              />
+              <button
+                type="button"
+                class="remove-btn"
+                (click)="removeSpecialty(i)"
+                *ngIf="specialtiesArray.length > 1"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <span class="error-message" *ngIf="specialtiesArray.invalid && specialtiesArray.touched">
+            Adicione pelo menos uma especialidade
+          </span>
+        </div>
+
+        <!-- Experience -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="experience" class="form-label">
+              Anos de Experiência *
+            </label>
+            <input
+              id="experience"
+              type="number"
+              formControlName="experience"
+              class="form-input"
+              [class.has-error]="editForm.get('experience')?.touched && editForm.get('experience')?.errors"
+              min="0"
+              max="70"
+              required
+            />
+            <span class="error-message" *ngIf="getFieldError('experience')">
+              {{ getFieldError('experience') }}
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="consultationPrice" class="form-label">
+              Valor da Consulta (R$) *
+            </label>
+            <input
+              id="consultationPrice"
+              type="number"
+              formControlName="consultationPrice"
+              class="form-input"
+              [class.has-error]="editForm.get('consultationPrice')?.touched && editForm.get('consultationPrice')?.errors"
+              min="0"
+              step="0.01"
+              required
+            />
+            <span class="error-message" *ngIf="getFieldError('consultationPrice')">
+              {{ getFieldError('consultationPrice') }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label for="description" class="form-label">
+            Sobre você (Descrição) *
+            <span class="helper-text">(mínimo 20 caracteres)</span>
+          </label>
+          <textarea
+            id="description"
+            formControlName="description"
+            class="form-textarea"
+            [class.has-error]="editForm.get('description')?.touched && editForm.get('description')?.errors"
+            placeholder="Conte um pouco sobre você, sua abordagem terapêutica e experiência..."
+            rows="5"
+            maxlength="1000"
+            required
+          ></textarea>
+          <div class="textarea-footer">
+            <span class="char-count">
+              {{ editForm.get('description')?.value?.length || 0 }}/1000
+            </span>
+            <span class="error-message" *ngIf="getFieldError('description')">
+              {{ getFieldError('description') }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Available for New Patients -->
+        <div class="form-group toggle-group">
+          <div class="toggle-label">
+            <label for="availableForNewPatients" class="form-label">
+              Disponível para novos pacientes?
+            </label>
+            <span class="helper-text">Marque se está aceitando novos pacientes</span>
+          </div>
+          <label class="toggle-switch">
+            <input
+              id="availableForNewPatients"
+              type="checkbox"
+              formControlName="availableForNewPatients"
+            />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="section-actions">
+          <app-secondary-button
+            label="← Anterior: Básico"
+            (onClick)="previousSection()"
+          ></app-secondary-button>
+          <app-primary-button
+            label="Próximo: Endereço →"
+            (onClick)="nextSection()"
+          ></app-primary-button>
+        </div>
+      </app-card>
+      </ng-container>
+
+      <!-- SECTION 3: ADDRESS -->
+      <ng-container *ngIf="currentSection === 3">
+      <app-card class="form-section">
+        <div class="section-header">
+          <h2>Localização</h2>
+          <p class="section-description">Endereço do seu consultório ou local de atendimento</p>
+        </div>
+
+        <div formGroupName="address">
+          <!-- Street -->
+          <div class="form-group">
+            <label for="street" class="form-label">
+              Rua/Avenida *
+            </label>
+            <input
+              id="street"
+              type="text"
+              formControlName="street"
+              class="form-input"
+              [class.has-error]="editForm.get('address.street')?.touched && editForm.get('address.street')?.errors"
+              placeholder="Rua Principal, 123"
+              required
+            />
+            <span class="error-message" *ngIf="getFieldError('address.street')">
+              {{ getFieldError('address.street') }}
+            </span>
+          </div>
+
+          <!-- City and State -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="city" class="form-label">
+                Cidade *
+              </label>
+              <input
+                id="city"
+                type="text"
+                formControlName="city"
+                class="form-input"
+                [class.has-error]="editForm.get('address.city')?.touched && editForm.get('address.city')?.errors"
+                placeholder="São Paulo"
+                required
+              />
+              <span class="error-message" *ngIf="getFieldError('address.city')">
+                {{ getFieldError('address.city') }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="state" class="form-label">
+                Estado *
+              </label>
+              <input
+                id="state"
+                type="text"
+                formControlName="state"
+                class="form-input"
+                [class.has-error]="editForm.get('address.state')?.touched && editForm.get('address.state')?.errors"
+                placeholder="SP"
+                maxlength="2"
+                required
+              />
+              <span class="error-message" *ngIf="getFieldError('address.state')">
+                {{ getFieldError('address.state') }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Zip Code and Country -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="zipCode" class="form-label">
+                CEP *
+              </label>
+              <input
+                id="zipCode"
+                type="text"
+                formControlName="zipCode"
+                class="form-input"
+                [class.has-error]="editForm.get('address.zipCode')?.touched && editForm.get('address.zipCode')?.errors"
+                placeholder="12345-678"
+                required
+              />
+              <span class="error-message" *ngIf="getFieldError('address.zipCode')">
+                {{ getFieldError('address.zipCode') }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="country" class="form-label">
+                País *
+              </label>
+              <input
+                id="country"
+                type="text"
+                formControlName="country"
+                class="form-input"
+                [class.has-error]="editForm.get('address.country')?.touched && editForm.get('address.country')?.errors"
+                placeholder="Brasil"
+                required
+              />
+              <span class="error-message" *ngIf="getFieldError('address.country')">
+                {{ getFieldError('address.country') }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="section-actions">
+          <app-secondary-button
+            label="← Anterior: Profissional"
+            (onClick)="previousSection()"
+          ></app-secondary-button>
+          <app-primary-button
+            label="Próximo: Disponibilidade →"
+            (onClick)="nextSection()"
+          ></app-primary-button>
+        </div>
+      </app-card>
+      </ng-container>
+
+      <!-- SECTION 4: AVAILABILITY -->
+      <ng-container *ngIf="currentSection === 4">
+      <app-card class="form-section">
+        <div class="section-header">
+          <h2>Disponibilidade</h2>
+          <p class="section-description">Dias e horários que você atende</p>
+        </div>
+
+        <div formGroupName="availability">
+          <!-- Days of Week -->
+          <div class="form-group">
+            <label class="form-label">
+              Dias de Atendimento *
+              <span class="helper-text">(selecione ao menos um dia)</span>
+            </label>
+            <div class="days-grid">
+              <button
+                type="button"
+                *ngFor="let day of daysOfWeek"
+                class="day-btn"
+                [class.selected]="isDaySelected(day)"
+                (click)="toggleDay(day)"
+              >
+                {{ dayLabels[day] }}
+              </button>
+            </div>
+            <span
+              class="error-message"
+              *ngIf="daysArray.invalid && daysArray.touched"
+            >
+              Selecione ao menos um dia
+            </span>
+          </div>
+
+          <!-- Time Range -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="startTime" class="form-label">
+                Horário de Início *
+              </label>
+              <input
+                id="startTime"
+                type="time"
+                formControlName="startTime"
+                class="form-input"
+                [class.has-error]="editForm.get('availability.startTime')?.touched && editForm.get('availability.startTime')?.errors"
+                required
+              />
+              <span class="error-message" *ngIf="getFieldError('availability.startTime')">
+                {{ getFieldError('availability.startTime') }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="endTime" class="form-label">
+                Horário de Término *
+              </label>
+              <input
+                id="endTime"
+                type="time"
+                formControlName="endTime"
+                class="form-input"
+                [class.has-error]="editForm.get('availability.endTime')?.touched && editForm.get('availability.endTime')?.errors"
+                required
+              />
+              <span class="error-message" *ngIf="getFieldError('availability.endTime')">
+                {{ getFieldError('availability.endTime') }}
+              </span>
+            </div>
+          </div>
+
+          <div
+            class="error-message"
+            *ngIf="editForm.get('availability')?.errors?.['invalidTimeRange']"
+          >
+            O horário de término deve ser após o horário de início
+          </div>
+        </div>
+
+        <!-- Final Navigation Buttons -->
+        <div class="section-actions final">
+          <app-secondary-button
+            label="← Anterior: Endereço"
+            (onClick)="previousSection()"
+          ></app-secondary-button>
+          <div style="flex: 1;"></div>
+        </div>
+
+        <!-- Loading indicator while saving -->
+        <div class="saving-indicator" *ngIf="isSaving">
+          <span class="saving-text">Salvando suas alterações...</span>
+        </div>
+      </app-card>
+</ng-container>
+      <!-- Bottom Sticky Footer -->
+      <div class="footer-actions">
+        <button type="button" class="cancel-footer-btn" (click)="onCancel()">
+          ← Voltar
+        </button>
+        <app-primary-button
+          label="💾 Salvar Alterações"
+          [disabled]="!editForm.valid || isSaving"
+          (onClick)="saveForm()"
+        ></app-primary-button>
+      </div>    </form>
+  </div>
+</div>

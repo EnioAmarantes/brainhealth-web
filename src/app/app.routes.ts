@@ -71,6 +71,12 @@ export const routes: Routes = [
     data: { title: 'Detalhes do Profissional' }
   },
   {
+    path: 'professional/edit/profile',
+    canActivate: [AuthGuard, ProfessionalGuard],
+    loadComponent: () => import('./pages/professional-edit/professional-edit.component').then(m => m.ProfessionalEditComponent),
+    data: { title: 'Editar Perfil' }
+  },
+  {
     path: 'schedule/:professionalId',
     canActivate: [AuthGuard],
     loadComponent: () => import('./pages/schedule/schedule.component').then(m => m.ScheduleComponent),
