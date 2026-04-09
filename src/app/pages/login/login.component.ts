@@ -9,7 +9,7 @@ import { BehaviorSubject } from 'rxjs';
 
 @Component({
     selector: 'app-login',
-    imports: [CommonModule, ReactiveFormsModule, CardComponent, PrimaryButtonComponent, SecondaryButtonComponent],
+    imports: [CommonModule, ReactiveFormsModule, CardComponent, PrimaryButtonComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
       <div class="login-box">

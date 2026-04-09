@@ -7,8 +7,8 @@ import {
 } from '@angular/forms';
 
 /**
- * Validador para CRP - formato: 123456/XX
- * Exemplo válido: 123456/SP, 999999/RJ
+ * Validador para CRP - formato: CRP-SP-123456
+ * Exemplo válido: CRP-SP-123456, CRP-RJ-999999
  */
 export function crpValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -16,9 +16,10 @@ export function crpValidator(): ValidatorFn {
       return null; // Válido se vazio (é opcional)
     }
 
-    const crpRegex = /^\d{6}\/[A-Z]{2}$/;
+    // Formato: CRP-UF-NÚMEROS (ex: CRP-SP-123456)
+    const crpRegex = /^CRP-[A-Z]{2}-\d{6}$/;
 
-    if (!crpRegex.test(control.value)) {
+    if (!crpRegex.test(control.value.toUpperCase())) {
       return { invalidCRP: { value: control.value } };
     }
 

@@ -216,6 +216,17 @@ export class ProfessionalEditComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Converte o valor do CRP para maiúsculas
+   */
+  onCrpInput(event: any): void {
+    const value = event.target.value || '';
+    const control = this.editForm.get('crp');
+    if (control && value !== value.toUpperCase()) {
+      control.setValue(value.toUpperCase(), { emitEvent: false });
+    }
+  }
+
+  /**
    * Adiciona uma nova especialidade
    */
   addSpecialty(): void {
@@ -316,7 +327,7 @@ export class ProfessionalEditComponent implements OnInit, OnDestroy {
       return 'Email inválido';
     }
     if (field.errors['invalidCRP']) {
-      return 'CRP inválido. Formato: 123456/XX';
+      return 'CRP inválido. Formato: CRP-SP-123456';
     }
 
     return 'Este campo contém um erro';

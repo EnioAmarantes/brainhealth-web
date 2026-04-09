@@ -188,7 +188,8 @@
             formControlName="crp"
             class="form-input"
             [class.has-error]="editForm.get('crp')?.touched && editForm.get('crp')?.errors"
-            placeholder="123456/XX"
+            placeholder="CRP-SP-123456"
+            (input)="onCrpInput($event)"
           />
           <span class="error-message" *ngIf="getFieldError('crp')">
             {{ getFieldError('crp') }}
