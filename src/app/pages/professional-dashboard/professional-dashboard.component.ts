@@ -122,7 +122,11 @@ import { UserType } from '@app/models/auth.model';
               <div class="profile-details-grid">
                 <div class="detail-box">
                   <label class="detail-label">💼 Localização</label>
-                  <p class="detail-value">{{ professional.address.street }}, {{ professional.address.city }} - {{ professional.address.state }}</p>
+                  <p class="detail-value">
+                    {{ professional.address.street }}, 
+                    {{ professional.address.city }} - 
+                    {{ professional.address.state }}
+                  </p>
                 </div>
 
                 <div class="detail-box">
@@ -314,7 +318,7 @@ export class ProfessionalDashboardComponent implements OnInit {
             this.professionalService.getProfessionalProfile(professional.id)
               .subscribe({
                 next: (profile) => {
-                  console.log(JSON.stringify(profile));
+                  console.log(JSON.stringify(professional));
                   this.professionalProfile$.next(profile);
                 },
                 error: (error) => {
@@ -324,11 +328,11 @@ export class ProfessionalDashboardComponent implements OnInit {
           },
           error: (error) => {
             console.error('Erro ao carregar profissional:', error);
-            this.router.navigate(['/login/professional']);
+            this.router.navigate(['/']);
           }
         });
     } else {
-      this.router.navigate(['/login/professional']);
+      this.router.navigate(['/']);
     }
   }
 

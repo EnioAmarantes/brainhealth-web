@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, tap, shareReplay } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, switchMap, tap, shareReplay, map } from 'rxjs/operators';
 import { 
   Professional, 
   ProfessionalFilters, 
   PaginatedResult 
 } from '@app/models/professional.model';
 import { environment } from '@environments/environment';
+import { ProfessionalMapper } from '@app/mappers/professional.mapper';
 
 @Injectable({
   providedIn: 'root'
@@ -132,14 +133,18 @@ export class ProfessionalService {
    * Usa o endpoint de perfil autenticado do backend
    */
   getCurrentProfessional(): Observable<Professional> {
-    return this.http.get<Professional>(`${this.apiUrl}/me/profile`);
+    return this.http.get<any>(`${this.apiUrl}/me/profile`).pipe(
+      map(data => ProfessionalMapper.mapFromBackend(data))
+    );
   }
 
   /**
    * Obtém perfil detalhado do profissional
    */
-  getProfessionalProfile(professionalId: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${professionalId}`);
+  getProfessionalProfile(professionalId: string): Observable<Professional> {
+    return this.http.get<any>(`${this.apiUrl}/${professionalId}`).pipe(
+      map(data => ProfessionalMapper.mapFromBackend(data))
+    );
   }
 
   /**
