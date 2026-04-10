@@ -1,3 +1,5 @@
+import { ProfessionalProfile } from "./professional-profile.model";
+
 /**
  * Modelo de profissional de saúde
  */
@@ -18,6 +20,7 @@ export interface Professional {
   consultationPrice?: number;
   totalPatients?: number;
   averageRating?: number;
+  profile: ProfessionalProfile;
 }
 
 export interface Address {

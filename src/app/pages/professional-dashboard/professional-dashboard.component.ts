@@ -8,6 +8,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { Professional } from '@app/models/professional.model';
 import { finalize } from 'rxjs/operators';
 import { UserType } from '@app/models/auth.model';
+import { ProfessionalProfile } from '@app/models/professional-profile.model';
 
 @Component({
     selector: 'app-professional-dashboard',
@@ -280,7 +281,7 @@ import { UserType } from '@app/models/auth.model';
 })
 export class ProfessionalDashboardComponent implements OnInit {
   currentProfessional$ = new BehaviorSubject<Professional | null>(null);
-  professionalProfile$ = new BehaviorSubject<any | null>(null);
+  professionalProfile$ = new BehaviorSubject<ProfessionalProfile | null>(null);
   isLoading$ = new BehaviorSubject<boolean>(true);
   hoveredKpi: string | null = null;
 
@@ -305,6 +306,7 @@ export class ProfessionalDashboardComponent implements OnInit {
     const currentUser = this.authService.getCurrentUser();
     
     if (currentUser && currentUser.role.toUpperCase() === UserType.PROFESSIONAL) {
+      // Busca dados do servidor
       this.professionalService.getCurrentProfessional()
         .pipe(
           finalize(() => {
@@ -315,25 +317,35 @@ export class ProfessionalDashboardComponent implements OnInit {
         .subscribe({
           next: (professional) => {
             this.currentProfessional$.next(professional);
-            this.professionalService.getProfessionalProfile(professional.id)
-              .subscribe({
-                next: (profile) => {
-                  console.log(JSON.stringify(professional));
-                  this.professionalProfile$.next(profile);
-                },
-                error: (error) => {
-                  console.error('Erro ao carregar perfil:', error);
-                }
-              });
+            this.loadProfileData(professional.id);
           },
           error: (error) => {
             console.error('Erro ao carregar profissional:', error);
-            this.router.navigate(['/']);
-          }
-        });
+              this.router.navigate(['/']);
+            }
+          });
     } else {
       this.router.navigate(['/']);
     }
+  }
+
+  private loadProfileData(professionalId: string): void {
+    this.professionalService.getProfessionalProfile(professionalId)
+      .pipe(
+        finalize(() => {
+          this.isLoading$.next(false);
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe({
+        next: (professional) => {
+          console.log("Current Profile: " + JSON.stringify(professional?.profile));
+          this.professionalProfile$.next(professional?.profile);
+        },
+        error: (error) => {
+          console.error('Erro ao carregar perfil:', error);
+        }
+      });
   }
 
   getAvailableSlots(): number {
@@ -369,8 +381,8 @@ export class ProfessionalDashboardComponent implements OnInit {
     const newStatus = !professional.availableForNewPatients;
     this.professionalService.updateAvailability(professional.id, newStatus)
       .subscribe({
-        next: (updated) => {
-          this.currentProfessional$.next(updated);
+        next: () => {
+          this.loadProfessionalData();
           this.cdr.markForCheck();
         },
         error: (error) => {

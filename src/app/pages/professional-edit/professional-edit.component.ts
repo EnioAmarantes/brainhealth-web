@@ -370,7 +370,7 @@ export class ProfessionalEditComponent implements OnInit, OnDestroy {
     }
 
     this.professionalService
-      .updateProfessional(updateData)
+      .updateCurrentProfessional(updateData)
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => (this.isSaving = false))

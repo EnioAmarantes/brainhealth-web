@@ -153,7 +153,7 @@ export class ProfessionalService {
   updateAvailability(professionalId: string, available: boolean): Observable<Professional> {
     return this.http.patch<Professional>(
       `${this.apiUrl}/${professionalId}/availability`,
-      { availableForNewPatients: available }
+      available
     );
   }
 
@@ -162,34 +162,14 @@ export class ProfessionalService {
    * Usa o endpoint de perfil autenticado do backend
    */
   updateCurrentProfessional(data: Partial<Professional>): Observable<Professional> {
-    return this.http.patch<any>(
-      `${this.apiUrl}/me/profile`,
+    const url = `${this.apiUrl}/me/profile`;
+    
+    return this.http.put<any>(
+      url,
       this.mapProfessionalToBackend(data)
     ).pipe(
       map(response => ProfessionalMapper.mapFromBackend(response))
     );
-  }
-
-  /**
-   * Atualiza dados de um profissional específico (por ID)
-   * Requer permissões de administrador ou pertencer ao profissional
-   */
-  updateProfessional(professionalIdOrData: string | Partial<Professional>, data?: Partial<Professional>): Observable<Professional> {
-    // Overload: se o primeiro argumento é string, usa como ID
-    if (typeof professionalIdOrData === 'string' && data) {
-      return this.http.patch<any>(
-        `${this.apiUrl}/${professionalIdOrData}`,
-        this.mapProfessionalToBackend(data)
-      ).pipe(
-        map(response => ProfessionalMapper.mapFromBackend(response))
-      );
-    }
-    // Se apenas um argumento, trata como atualização do profissional autenticado
-    else if (typeof professionalIdOrData === 'object') {
-      return this.updateCurrentProfessional(professionalIdOrData);
-    }
-
-    throw new Error('Argumentos inválidos para updateProfessional');
   }
 
   /**

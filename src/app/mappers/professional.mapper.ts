@@ -25,6 +25,17 @@ export class ProfessionalMapper {
       consultationPrice: data.consultationPrice,
       totalPatients: data.totalPatients || 0,
       averageRating: data.averageRating || 0,
+      profile: {
+        id: data.profile.id,
+        education: data.profile?.education || '',
+        yearsOfExperience: data.profile?.yearsOfExperience || 0,
+        therapeuticApproaches: data.profile?.therapeuticApproaches || '',
+        populationsServed: data.profile?.populationsServed || '',
+        languages: data.profile?.languages || '',
+        officeConsultation: data.profile?.officeConsultation || false,
+        onlineConsultation: data.profile?.onlineConsultation || false,
+        availabilitySchedule: data.profile?.availabilitySchedule || '{}',
+      }
     };
   }
 
@@ -36,7 +47,7 @@ export class ProfessionalMapper {
       street: data.address || '', // Backend envia endereço completo em um campo
       city: data.city || '',
       state: data.state || '',
-      zipCode: '', // Backend não envia CEP
+      zipCode: data.zipCode || '', // Backend não envia CEP
       country: 'Brasil', // Padrão Brasil
     };
   }
