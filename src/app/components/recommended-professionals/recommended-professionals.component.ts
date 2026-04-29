@@ -2,6 +2,8 @@ import { Component, Input, ChangeDetectionStrategy, Output, EventEmitter } from 
 import { CommonModule } from '@angular/common';
 import { CardComponent, PrimaryButtonComponent, SecondaryButtonComponent } from '@app/components/shared';
 import { RecommendedProfessionalsResponse, RecommendedProfessional, AIAnalysisService } from '@app/services/ai-analysis.service';
+import { WhatsAppService } from '@app/services/whatsapp.service';
+import { QuestionnaireSessionService } from '@app/services/questionnaire-session.service';
 
 @Component({
   selector: 'app-recommended-professionals',
@@ -105,7 +107,7 @@ import { RecommendedProfessionalsResponse, RecommendedProfessional, AIAnalysisSe
 
               <div class="consultation-rate">
                 <strong>Valor da Consulta:</strong>
-                <span class="rate">R$ {{ professional.consultationRate | number: '1.2-2' }}</span>
+                <span class="rate">R$ {{ professional.consultationPrice | number: '1.2-2' }}</span>
               </div>
 
               <div *ngIf="professional.recommendationReason" class="reason">
@@ -128,11 +130,15 @@ import { RecommendedProfessionalsResponse, RecommendedProfessional, AIAnalysisSe
                 label="Ver Perfil"
                 (onClick)="viewProfile(professional.id)"
               ></app-primary-button>
-              <app-secondary-button
-                label="Agendar Consulta"
-                (onClick)="scheduleConsultation(professional.id)"
+              <button 
+                class="whatsapp-button"
+                (click)="scheduleConsultation(professional.id)"
                 [disabled]="!professional.availableForNewPatients"
-              ></app-secondary-button>
+                title="Enviar mensagem via WhatsApp"
+              >
+                <span class="whatsapp-icon">💚</span>
+                <span class="whatsapp-text">WhatsApp</span>
+              </button>
             </div>
           </app-card>
         </div>
@@ -403,6 +409,54 @@ import { RecommendedProfessionalsResponse, RecommendedProfessional, AIAnalysisSe
     .professional-actions app-secondary-button {
       flex: 1;
     }
+
+    .whatsapp-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex: 1;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #25d366 0%, #20ba58 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(37, 211, 102, 0.3);
+      font-family: inherit;
+    }
+
+    .whatsapp-button:hover:not(:disabled) {
+      background: linear-gradient(135deg, #22c959 0%, #1fa556 100%);
+      box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .whatsapp-button:active:not(:disabled) {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(37, 211, 102, 0.3);
+    }
+
+    .whatsapp-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .whatsapp-icon {
+      font-size: 18px;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .whatsapp-text {
+      font-size: 14px;
+    }
   `]
 })
 export class RecommendedProfessionalsComponent {
@@ -410,7 +464,11 @@ export class RecommendedProfessionalsComponent {
   @Output() viewProfileClick = new EventEmitter<string>();
   @Output() scheduleConsultationClick = new EventEmitter<string>();
 
-  constructor(protected aiAnalysisService: AIAnalysisService) {}
+  constructor(
+    protected aiAnalysisService: AIAnalysisService,
+    private whatsAppService: WhatsAppService,
+    private questionnaireSessionService: QuestionnaireSessionService
+  ) {}
 
   getUrgencyColor(level: string): string {
     return this.aiAnalysisService.getUrgencyLevelColor(level);

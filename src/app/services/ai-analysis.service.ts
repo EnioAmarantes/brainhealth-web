@@ -22,7 +22,7 @@ export interface RecommendedProfessional {
   specialties: string;
   bio?: string;
   location: string;
-  consultationRate: number;
+  consultationPrice: number;
   averageRating: number;
   totalPatients: number;
   availableForNewPatients: boolean;

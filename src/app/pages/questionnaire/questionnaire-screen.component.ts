@@ -2,9 +2,11 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { CardComponent, PrimaryButtonComponent, SecondaryButtonComponent, LoadingIndicatorComponent } from '@app/components/shared';
+import { CardComponent, PrimaryButtonComponent, SecondaryButtonComponent, LoadingIndicatorComponent, WhatsAppButtonComponent } from '@app/components/shared';
 import { QuestionnaireService } from '@app/services/questionnaire.service';
 import { AIAnalysisService, RecommendedProfessionalsResponse } from '@app/services/ai-analysis.service';
+import { QuestionnaireSessionService } from '@app/services/questionnaire-session.service';
+import { WhatsAppService } from '@app/services/whatsapp.service';
 import { Questionnaire, Question, QuestionType } from '@app/models/questionnaire.model';
 import { catchError, finalize } from 'rxjs/operators';
 import { of, BehaviorSubject } from 'rxjs';
@@ -17,7 +19,8 @@ import { of, BehaviorSubject } from 'rxjs';
         CardComponent,
         PrimaryButtonComponent,
         SecondaryButtonComponent,
-        LoadingIndicatorComponent
+        LoadingIndicatorComponent,
+        WhatsAppButtonComponent
     ],
     changeDetection: ChangeDetectionStrategy.Default,
     template: `
@@ -199,7 +202,7 @@ import { of, BehaviorSubject } from 'rxjs';
                     <p><strong>Especialidade:</strong> {{ professional.specialties }}</p>
                     <p *ngIf="professional.bio"><strong>Bio:</strong> {{ professional.bio }}</p>
                     <p><strong>Avaliação:</strong> ⭐ {{ professional.averageRating }}/5 ({{ professional.totalPatients }} pacientes)</p>
-                    <p><strong>Taxa:</strong> R$ {{ professional.consultationRate | number: '1.2-2' }}</p>
+                    <p><strong>Taxa:</strong> R$ {{ professional.consultationPrice | number: '1.2-2' }}</p>
                     <p *ngIf="professional.recommendationReason"><strong>Motivo:</strong> {{ professional.recommendationReason }}</p>
                   </div>
 
@@ -208,10 +211,10 @@ import { of, BehaviorSubject } from 'rxjs';
                       label="Ver Perfil"
                       (onClick)="viewProfessional(professional.id)"
                     ></app-primary-button>
-                    <app-primary-button
-                      label="Agendar"
+                    <app-whatsapp-button
+                      label="WhatsApp"
                       (onClick)="scheduleProfessional(professional.id)"
-                    ></app-primary-button>
+                    ></app-whatsapp-button>
                   </div>
                 </app-card>
               </div>
@@ -637,6 +640,8 @@ export class QuestionnaireScreenComponent implements OnInit {
     private fb: FormBuilder,
     private questionnaireService: QuestionnaireService,
     private aiAnalysisService: AIAnalysisService,
+    private questionnaireSessionService: QuestionnaireSessionService,
+    private whatsAppService: WhatsAppService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
@@ -791,6 +796,9 @@ export class QuestionnaireScreenComponent implements OnInit {
         queryParams: { 
           specialties: response.recommendedSpecialties.join(','),
           description: this.freeTextForm.get('freeTextDescription')?.value
+        },
+        state: {
+          recommendedProfessionals: response.recommendedProfessionals
         }
       });
     }
@@ -829,6 +837,16 @@ export class QuestionnaireScreenComponent implements OnInit {
           if (response) {
             this.recommendedProfessionals$.next(response);
             this.recommendedProfessionals = response;
+            
+            // Armazenar dados na sessão para uso posterior (ex: envio de WhatsApp)
+            const description = this.freeTextForm.get('freeTextDescription')?.value;
+            this.questionnaireSessionService.setSessionData({
+              patientDescription: description,
+              aiAnalysisResult: response,
+              questionnaireResponses: this.questionnaireForm.value,
+              timestamp: new Date()
+            });
+            
             this.currentStep$.next('results');
             this.currentStep = 'results';
             this.cdr.markForCheck();
@@ -838,13 +856,12 @@ export class QuestionnaireScreenComponent implements OnInit {
   }
 
   viewProfessional(professionalId: string): void {
-    this.router.navigate(['/professionals', professionalId]);
+    this.router.navigate(['/professional', professionalId]);
   }
 
   scheduleProfessional(professionalId: string): void {
-    this.router.navigate(['/schedule'], {
-      queryParams: { professionalId }
-    });
+    const sessionData = this.questionnaireSessionService.getSessionData();
+    this.whatsAppService.openConsultationChat(sessionData);
   }
 
   getUrgencyColor(urgency: string): string {

@@ -7,6 +7,7 @@ export interface Professional {
   id: string;
   fullName: string;
   email: string;
+  phoneNumber?: string; // Número de telefone/WhatsApp
   crp?: string; // Registro profissional
   specialties: string[];
   description: string;

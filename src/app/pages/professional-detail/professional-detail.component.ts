@@ -1,10 +1,12 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CardComponent, PrimaryButtonComponent, SecondaryButtonComponent, LoadingIndicatorComponent } from '@app/components/shared';
+import { CardComponent, PrimaryButtonComponent, SecondaryButtonComponent, LoadingIndicatorComponent, WhatsAppButtonComponent } from '@app/components/shared';
 import { ProfessionalService } from '@app/services/professional.service';
+import { AuthService } from '@app/services/auth.service';
+import { WhatsAppService, WhatsAppConsultationData } from '@app/services/whatsapp.service';
 import { Professional } from '@app/models/professional.model';
-import { Observable } from 'rxjs';
+import { Observable, combineLatest, map, catchError, of } from 'rxjs';
 
 @Component({
     selector: 'app-professional-detail',
@@ -13,7 +15,8 @@ import { Observable } from 'rxjs';
         CardComponent,
         PrimaryButtonComponent,
         SecondaryButtonComponent,
-        LoadingIndicatorComponent
+        LoadingIndicatorComponent,
+        WhatsAppButtonComponent
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
@@ -25,41 +28,89 @@ import { Observable } from 'rxjs';
         ></app-secondary-button>
       </div>
 
-      <app-card [elevated]="true" *ngIf="professional$ | async as professional">
-        <div class="professional-detail">
-          <h1>{{ professional.fullName }}</h1>
-          <div class="specialties">
-            <span class="specialty" *ngFor="let specialty of professional.specialties">
-              {{ specialty }}
-            </span>
+      <ng-container *ngIf="detailData$ | async as data">
+        <!-- Erro ao carregar profissional -->
+        <app-card [elevated]="true" *ngIf="!data.professional.id">
+          <div class="error-message">
+            <h2>Profissional não encontrado</h2>
+            <p>Desculpe, não conseguimos carregar os dados do profissional solicitado.</p>
+            <app-secondary-button
+              label="Voltar"
+              (onClick)="navigateBack()"
+            ></app-secondary-button>
           </div>
+        </app-card>
 
-          <div class="meta-info">
-            <p><strong>Experiência:</strong> {{ professional.experience }} anos</p>
-            <p *ngIf="professional.crp"><strong>CRP:</strong> {{ professional.crp }}</p>
-            <p *ngIf="professional.consultationPrice"><strong>Valor da Consulta:</strong> R$ {{ professional.consultationPrice | number: '1.2-2' }}</p>
-          </div>
+        <!-- Versão Completa - Usuário Logado -->
+        <app-card [elevated]="true" *ngIf="data.professional.id && data.isAuthenticated">
+          <div class="professional-detail">
+            <h1>{{ data.professional.fullName }}</h1>
+            <div class="specialties">
+              <span class="specialty" *ngFor="let specialty of data.professional.specialties">
+                {{ specialty }}
+              </span>
+            </div>
 
-          <div class="description">
-            <h3>Sobre</h3>
-            <p>{{ professional.description }}</p>
-          </div>
+            <div class="meta-info">
+              <p><strong>Experiência:</strong> {{ data.professional.experience }} anos</p>
+              <p *ngIf="data.professional.crp"><strong>CRP:</strong> {{ data.professional.crp }}</p>
+              <p *ngIf="data.professional.consultationPrice"><strong>Valor da Consulta:</strong> R$ {{ data.professional.consultationPrice | number: '1.2-2' }}</p>
+            </div>
 
-          <div class="location">
-            <h3>Localização</h3>
-            <p>{{ professional.address.street }}<br>
-               {{ professional.address.city }}, {{ professional.address.state }}<br>
-               {{ professional.address.zipCode }}, {{ professional.address.country }}</p>
-          </div>
+            <div class="description">
+              <h3>Sobre</h3>
+              <p>{{ data.professional.description }}</p>
+            </div>
 
-          <div class="actions">
-            <app-primary-button
-              label="Agendar Consulta"
-              (onClick)="scheduleConsultation(professional.id)"
-            ></app-primary-button>
+            <div class="location">
+              <h3>Localização</h3>
+              <p>{{ data.professional.address.street }}<br>
+                 {{ data.professional.address.city }}, {{ data.professional.address.state }}<br>
+                 {{ data.professional.address.zipCode }}, {{ data.professional.address.country }}</p>
+            </div>
+
+            <div class="actions">
+              <app-primary-button
+                label="Agendar Consulta"
+                (onClick)="scheduleConsultation(data.professional.id)"
+              ></app-primary-button>
+            </div>
           </div>
-        </div>
-      </app-card>
+        </app-card>
+
+        <!-- Versão Resumida - Usuário Não Logado -->
+        <app-card [elevated]="true" *ngIf="data.professional.id && !data.isAuthenticated">
+          <div class="professional-detail professional-summary">
+            <h1>{{ data.professional.fullName }}</h1>
+            <div class="specialties">
+              <span class="specialty" *ngFor="let specialty of data.professional.specialties">
+                {{ specialty }}
+              </span>
+            </div>
+
+            <div class="experience-preview">
+              <p><strong>Experiência:</strong> {{ data.professional.experience }} anos</p>
+            </div>
+
+            <div class="description">
+              <h3>Sobre</h3>
+              <p class="summary-text">{{ data.professional.description | slice:0:300 }}...</p>
+              <p class="login-prompt">Faça login para ver o perfil completo do profissional</p>
+            </div>
+
+            <div class="actions-unauthenticated">
+              <app-whatsapp-button
+                label="WhatsApp"
+                (onClick)="contactViaWhatsApp(data.professional)"
+              ></app-whatsapp-button>
+              <app-secondary-button
+                label="Fazer Login"
+                (onClick)="goToLogin()"
+              ></app-secondary-button>
+            </div>
+          </div>
+        </app-card>
+      </ng-container>
 
       <app-loading-indicator></app-loading-indicator>
     </div>
@@ -105,6 +156,7 @@ import { Observable } from 'rxjs';
       }
 
       .meta-info,
+      .experience-preview,
       .description,
       .location {
         margin-bottom: 24px;
@@ -142,26 +194,113 @@ import { Observable } from 'rxjs';
         }
       }
     }
+
+    .professional-summary {
+      .summary-text {
+        color: #666;
+        line-height: 1.6;
+      }
+
+      .login-prompt {
+        background: #f5f5f5;
+        padding: 12px;
+        border-radius: 8px;
+        color: #667eea;
+        font-style: italic;
+        margin-top: 12px;
+        border-left: 4px solid #667eea;
+      }
+
+      .actions-unauthenticated {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+
+        @media (max-width: 480px) {
+          grid-template-columns: 1fr;
+        }
+      }
+    }
+
+    .error-message {
+      text-align: center;
+      padding: 40px 20px;
+
+      h2 {
+        margin: 0 0 16px 0;
+        font-size: 24px;
+        color: #d32f2f;
+      }
+
+      p {
+        margin: 0 0 24px 0;
+        color: #666;
+        font-size: 16px;
+      }
+    }
   `]
 })
 export class ProfessionalDetailComponent implements OnInit {
   professional$!: Observable<Professional>;
+  detailData$!: Observable<{ professional: Professional; isAuthenticated: boolean }>;
 
   constructor(
     private route: ActivatedRoute,
     private professionalService: ProfessionalService,
+    private authService: AuthService,
+    private whatsAppService: WhatsAppService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       const id = params['id'];
-      this.professional$ = this.professionalService.getProfessionalById(id);
+      this.professional$ = this.professionalService.getProfessionalById(id).pipe(
+        catchError(error => {
+          console.error('Erro ao carregar profissional:', error);
+          return of(null as any);
+        })
+      );
+
+      // Combina os dados do profissional com o status de autenticação
+      this.detailData$ = combineLatest([
+        this.professional$,
+        this.authService.isAuthenticated$
+      ]).pipe(
+        map(([professional, isAuthenticated]) => ({
+          professional: professional || {} as Professional,
+          isAuthenticated
+        })),
+        catchError(error => {
+          console.error('Erro ao combinar dados:', error);
+          return of({ professional: {} as Professional, isAuthenticated: false });
+        })
+      );
     });
   }
 
   scheduleConsultation(professionalId: string): void {
     this.router.navigate(['/schedule', professionalId]);
+  }
+
+  contactViaWhatsApp(professional: Professional): void {
+    // Obter dados necessários para o WhatsApp
+    const whatsAppData: WhatsAppConsultationData = {
+      professionalPhoneNumber: professional.phoneNumber || '',
+      professionalName: professional.fullName,
+      patientDescription: 'Gostaria de marcar uma consulta',
+      aiAnalysisSynthesis: '',
+      identifiedIssues: [],
+      recommendedSpecialties: professional.specialties,
+      urgencyLevel: 'normal'
+    };
+
+    const whatsAppLink = this.whatsAppService.generateWhatsAppLink(whatsAppData);
+    window.open(whatsAppLink, '_blank');
+  }
+
+  goToLogin(): void {
+    this.router.navigate(['/']);
   }
 
   navigateBack(): void {

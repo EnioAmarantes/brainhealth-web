@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { CardComponent, PrimaryButtonComponent, SecondaryButtonComponent, LoadingIndicatorComponent } from '@app/components/shared';
 import { ProfessionalService } from '@app/services/professional.service';
 import { Professional, PaginatedResult } from '@app/models/professional.model';
-import { map, Observable } from 'rxjs';
+import { map, Observable, of } from 'rxjs';
 
 @Component({
     selector: 'app-professionals-list',
@@ -281,22 +281,38 @@ export class ProfessionalsListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      if (params['specialties']) {
-        const specialties = params['specialties'].split(',');
-        this.professionals$ = this.professionalService
-          .getRecommendedProfessionals(specialties)
-          .pipe(
-            map((professionals: Professional[]) => ({
-              items: professionals,
-              total: professionals.length,
-              page: 1,
-              pageSize: professionals.length,
-              totalPages: 1
-            }))
-          );
-      }
-    });
+    // Verificar se há dados recomendados passados do questionário
+    const navigation = this.router.getCurrentNavigation();
+    const recommendedProfessionalsFromState = navigation?.extras?.state?.['recommendedProfessionals'];
+
+    if (recommendedProfessionalsFromState && Array.isArray(recommendedProfessionalsFromState)) {
+      // Usar os profissionais recomendados passados via state
+      this.professionals$ = of({
+        items: recommendedProfessionalsFromState,
+        total: recommendedProfessionalsFromState.length,
+        page: 1,
+        pageSize: recommendedProfessionalsFromState.length,
+        totalPages: 1
+      });
+    } else {
+      // Fallback: buscar com base nos queryParams
+      this.route.queryParams.subscribe(params => {
+        if (params['specialties']) {
+          const specialties = params['specialties'].split(',');
+          this.professionals$ = this.professionalService
+            .getRecommendedProfessionals(specialties)
+            .pipe(
+              map((professionals: Professional[]) => ({
+                items: professionals,
+                total: professionals.length,
+                page: 1,
+                pageSize: professionals.length,
+                totalPages: 1
+              }))
+            );
+        }
+      });
+    }
   }
 
   viewDetails(professionalId: string): void {

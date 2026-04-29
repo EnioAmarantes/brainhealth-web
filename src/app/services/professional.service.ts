@@ -59,7 +59,9 @@ export class ProfessionalService {
    * Obtém profissional por ID
    */
   getProfessionalById(id: string): Observable<Professional> {
-    return this.http.get<Professional>(`${this.apiUrl}/${id}`);
+    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+      map(data => ProfessionalMapper.mapFromBackend(data))
+    );
   }
 
   /**
@@ -71,9 +73,11 @@ export class ProfessionalService {
       params = params.append('specialties', specialty);
     });
 
-    return this.http.get<Professional[]>(
+    return this.http.get<any[]>(
       `${this.apiUrl}/recommended`,
       { params }
+    ).pipe(
+      map(data => data.map(item => ProfessionalMapper.mapFromBackend(item)))
     );
   }
 
@@ -122,9 +126,14 @@ export class ProfessionalService {
       params = params.set('availability', filters.availability.toString());
     }
 
-    return this.http.get<PaginatedResult<Professional>>(
+    return this.http.get<PaginatedResult<any>>(
       this.apiUrl,
       { params }
+    ).pipe(
+      map(result => ({
+        ...result,
+        items: result.items.map(item => ProfessionalMapper.mapFromBackend(item))
+      }))
     );
   }
 

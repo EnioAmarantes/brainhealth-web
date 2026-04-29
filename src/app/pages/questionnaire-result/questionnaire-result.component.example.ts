@@ -11,6 +11,9 @@ import {
 import {
   RecommendedProfessionalsResponse
 } from '@app/services/ai-analysis.service';
+import { QuestionnaireSessionService } from '@app/services/questionnaire-session.service';
+import { WhatsAppService } from '@app/services/whatsapp.service';
+import { ProfessionalService } from '@app/services/professional.service';
 
 @Component({
   selector: 'app-questionnaire-result',
@@ -97,7 +100,12 @@ export class QuestionnaireResultComponent implements OnInit {
   recommendedProfessionals$ = new BehaviorSubject<RecommendedProfessionalsResponse | null>(null);
   isLoading$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private questionnaireSessionService: QuestionnaireSessionService,
+    private whatsAppService: WhatsAppService,
+    private professionalService: ProfessionalService
+  ) {}
 
   ngOnInit(): void {
     // Inicializar componente
@@ -119,10 +127,44 @@ export class QuestionnaireResultComponent implements OnInit {
   }
 
   onScheduleConsultation(professionalId: string): void {
-    console.log('Agendar consulta:', professionalId);
-    this.router.navigate(['/schedule'], { 
-      queryParams: { professionalId } 
-    });
+    console.log('🔘 Botão Agendar clicado - Professional ID:', professionalId);
+    
+    // Recuperar dados da sessão (relato do paciente e análise de IA)
+    const sessionData = this.questionnaireSessionService.getSessionData();
+    
+    if (!sessionData) {
+      console.error('⚠️ Dados da sessão não encontrados');
+      alert('Dados da sessão não encontrados. Responda o questionário novamente.');
+      return;
+    }
+
+    console.log('✅ Dados da sessão recuperados');
+
+    // Preparar dados para gerar link WhatsApp
+    const whatsAppData = {
+      professionalPhoneNumber: '', // Não usado no teste
+      professionalName: 'Profissional',
+      patientDescription: sessionData.patientDescription,
+      aiAnalysisSynthesis: sessionData.aiAnalysisResult.problemSynthesis,
+      identifiedIssues: sessionData.aiAnalysisResult.identifiedIssues,
+      recommendedSpecialties: sessionData.aiAnalysisResult.recommendedSpecialties,
+      urgencyLevel: sessionData.aiAnalysisResult.urgencyLevel,
+      patientName: sessionData.questionnaireResponses?.patientName || 'Paciente'
+    };
+
+    // Gerar link wa.me com mensagem pré-formatada
+    const whatsappLink = this.whatsAppService.generateWhatsAppLink(whatsAppData);
+    
+    console.log('🔗 Link gerado:', whatsappLink);
+    
+    // Abrir WhatsApp em nova aba
+    if (whatsappLink) {
+      console.log('🚀 Abrindo WhatsApp...');
+      this.whatsAppService.openWhatsAppChat(whatsappLink);
+    } else {
+      console.error('❌ Erro ao gerar link WhatsApp');
+      alert('Erro ao gerar link WhatsApp');
+    }
   }
 
   goBack(): void {

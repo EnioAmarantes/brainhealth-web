@@ -8,16 +8,20 @@ export class ProfessionalMapper {
    * Transforma dados da API do backend em modelo Professional do frontend
    */
   static mapFromBackend(data: any): Professional {
+    // Cria um profile padrão se não existir
+    const profile = data.profile || {};
+    
     return {
       id: data.id,
       fullName: data.fullName,
       email: data.email,
+      phoneNumber: data.phoneNumber, // Número de telefone/WhatsApp do usuário
       crp: data.registrationNumber,
-      specialties: data.specialties ? data.specialties.split(',').map((s: string) => s.trim()) : [],
+      specialties: ProfessionalMapper.mapSpecialties(data.specialties),
       description: data.bio || '',
       rating: data.averageRating || 0,
       reviews: 0, // Backend não envia isso
-      experience: data.profile?.yearsOfExperience || 0,
+      experience: profile?.yearsOfExperience || 0,
       photo: data.profilePhotoUrl,
       address: ProfessionalMapper.mapAddress(data),
       availability: ProfessionalMapper.mapAvailability(data),
@@ -26,17 +30,41 @@ export class ProfessionalMapper {
       totalPatients: data.totalPatients || 0,
       averageRating: data.averageRating || 0,
       profile: {
-        id: data.profile.id,
-        education: data.profile?.education || '',
-        yearsOfExperience: data.profile?.yearsOfExperience || 0,
-        therapeuticApproaches: data.profile?.therapeuticApproaches || '',
-        populationsServed: data.profile?.populationsServed || '',
-        languages: data.profile?.languages || '',
-        officeConsultation: data.profile?.officeConsultation || false,
-        onlineConsultation: data.profile?.onlineConsultation || false,
-        availabilitySchedule: data.profile?.availabilitySchedule || '{}',
+        id: profile?.id || '',
+        education: profile?.education || '',
+        yearsOfExperience: profile?.yearsOfExperience || 0,
+        therapeuticApproaches: profile?.therapeuticApproaches || '',
+        populationsServed: profile?.populationsServed || '',
+        languages: profile?.languages || '',
+        officeConsultation: profile?.officeConsultation || false,
+        onlineConsultation: profile?.onlineConsultation || false,
+        availabilitySchedule: profile?.availabilitySchedule || '{}',
       }
     };
+  }
+
+  /**
+   * Mapeia as especialidades, garantindo que sempre retorna um array
+   */
+  private static mapSpecialties(specialties: any): string[] {
+    if (!specialties) {
+      return [];
+    }
+    
+    // Se já é um array, apenas retorna
+    if (Array.isArray(specialties)) {
+      return specialties;
+    }
+    
+    // Se é uma string, faz split por vírgula e limpa
+    if (typeof specialties === 'string') {
+      return specialties
+        .split(',')
+        .map((s: string) => s.trim())
+        .filter((s: string) => s.length > 0);
+    }
+    
+    return [];
   }
 
   /**
@@ -44,11 +72,11 @@ export class ProfessionalMapper {
    */
   private static mapAddress(data: any): Address {
     return {
-      street: data.address || '', // Backend envia endereço completo em um campo
-      city: data.city || '',
-      state: data.state || '',
-      zipCode: data.zipCode || '', // Backend não envia CEP
-      country: 'Brasil', // Padrão Brasil
+      street: data?.address || '', // Backend envia endereço completo em um campo
+      city: data?.city || '',
+      state: data?.state || '',
+      zipCode: data?.zipCode || '', // Backend não envia CEP
+      country: data?.country || 'Brasil', // Padrão Brasil
     };
   }
 
@@ -56,10 +84,12 @@ export class ProfessionalMapper {
    * Mapeia a disponibilidade
    */
   private static mapAvailability(data: any): any {
+    const profile = data?.profile;
+    
     // Se temos o schedule em JSON string, parseamos
-    if (data.profile?.availabilitySchedule) {
+    if (profile?.availabilitySchedule && typeof profile.availabilitySchedule === 'string') {
       try {
-        const schedule = JSON.parse(data.profile.availabilitySchedule);
+        const schedule = JSON.parse(profile.availabilitySchedule);
         return {
           days: [],
           startTime: '09:00',
