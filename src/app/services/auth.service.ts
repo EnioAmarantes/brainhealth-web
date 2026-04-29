@@ -213,6 +213,13 @@ export class AuthService {
   }
 
   /**
+   * Trata sucesso do login OAuth (público para ser usado pelo OAuthService)
+   */
+  handleOAuthSuccess(response: LoginResponse): void {
+    this.handleLoginSuccess(response);
+  }
+
+  /**
    * Trata sucesso de login
    */
   private handleLoginSuccess(response: LoginResponse): void {
