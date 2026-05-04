@@ -43,10 +43,9 @@ import { LoginComponent } from '../login/login.component';
 
     .container {
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       height: 100%;
       width: 100%;
-      min-width: 100vw;
       margin: 0;
       padding: 0;
       border: 0;
@@ -56,118 +55,62 @@ import { LoginComponent } from '../login/login.component';
     }
 
     .questionnaire-section {
-      flex: 0 0 70%;
-      width: 70%;
-      height: 100%;
-      min-height: 100%;
+      flex: 0 0 100%;
+      width: 100%;
+      height: auto;
+      min-height: 60vh;
       overflow-y: auto;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       box-sizing: border-box;
     }
 
     .login-section {
-      flex: 0 0 30%;
-      width: 30%;
-      height: 100%;
-      min-height: 100%;
+      flex: 0 0 auto;
+      width: 100%;
+      height: auto;
+      color: white;
+      text-align: center;
       background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 40px 30px;
+      padding: 24px 16px;
       overflow-y: auto;
       box-sizing: border-box;
+      border-top: 3px solid rgba(255, 255, 255, 0.3);
     }
 
-    .login-content {
-      width: 100%;
-      max-width: 600px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      box-sizing: border-box;
-      .app-title {
-        font-size: 28px;
-        font-weight: 700;
-        margin: 0 0 24px 0;
-        color: white;
-        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        text-align: center;
-      }
-
-      .login-options {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-
-        app-card {
-          .option-content {
-            h3 {
-              margin: 0 0 8px 0;
-              font-size: 16px;
-              color: #333;
-              font-weight: 600;
-            }
-
-            p {
-              margin: 0 0 16px 0;
-              font-size: 13px;
-              color: #666;
-              line-height: 1.4;
-            }
-
-            app-primary-button {
-              width: 100%;
-            }
-          }
-        }
-      }
-    }
-
-    @media (max-width: 1200px) {
+    /* Layout Horizontal - Desktop e Tablets grandes */
+    @media (min-width: 1024px) {
       .container {
-        flex-direction: column;
-        width: 100%;
-        min-width: auto;
-        height: auto;
+        flex-direction: row;
+        min-width: 100vw;
       }
 
       .questionnaire-section {
-        flex: 0 0 55vh;
-        min-height: 55vh;
-        width: 100%;
+        flex: 0 0 70%;
+        width: 70%;
+        height: 100%;
+        min-height: 100%;
+        border-top: none;
       }
 
       .login-section {
-        flex: 0 0 45vh;
-        min-height: 45vh;
-        width: 100%;
-        padding: 30px 20px;
+        flex: 0 0 30%;
+        width: 30%;
+        height: 100%;
+        min-height: 100%;
+        padding: 40px 30px;
+        border-top: none;
+      }
+
+      .login-content {
+        max-width: 350px;
       }
     }
 
-    @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-        width: 100%;
-        min-width: auto;
-        height: auto;
-      }
-
-      .questionnaire-section {
-        flex: 0 0 100%;
-        min-height: 60vh;
-        width: 100%;
-      }
-
-      .login-section {
-        flex: 0 0 auto;
-        min-height: auto;
-        width: 100%;
-        padding: 24px 16px;
-        border-top: 3px solid rgba(255, 255, 255, 0.3);
-      }
-
+    /* Layout Vertical - Tablets e Mobile */
+    @media (max-width: 1023px) {
       .login-content {
         max-width: 100%;
 
@@ -195,6 +138,7 @@ import { LoginComponent } from '../login/login.component';
       }
     }
 
+    /* Mobile pequeno */
     @media (max-width: 480px) {
       .login-section {
         padding: 16px;
