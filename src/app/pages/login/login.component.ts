@@ -8,6 +8,8 @@ import { OAuthService } from '@app/services/oauth.service';
 import { finalize, takeUntil } from 'rxjs/operators';
 import { BehaviorSubject, Subject } from 'rxjs';
 
+type LoginType = 'patient' | 'professional';
+
 @Component({
     selector: 'app-login',
     imports: [CommonModule, ReactiveFormsModule, CardComponent, PrimaryButtonComponent],
@@ -18,107 +20,170 @@ import { BehaviorSubject, Subject } from 'rxjs';
           <h1>Login</h1>
           <p class="subtitle">Acesse sua conta</p>
 
-          <!-- SSO Section - Patients Only -->
-          <div class="sso-header">
-            <span class="patient-badge">Apenas Pacientes</span>
+          <!-- Tabs -->
+          <div class="tabs">
+            <button
+              class="tab-button"
+              [class.active]="loginType === 'patient'"
+              (click)="loginType = 'patient'"
+            >
+              👤 Paciente
+            </button>
+            <button
+              class="tab-button"
+              [class.active]="loginType === 'professional'"
+              (click)="loginType = 'professional'"
+            >
+              👨‍⚕️ Profissional
+            </button>
           </div>
 
-          <div class="sso-section">
-            <div class="sso-buttons">
-              <button
-                type="button"
-                class="sso-button google-button"
-                (click)="loginWithGoogle()"
-                [disabled]="(isLoading$ | async) ?? false"
-                title="Entrar com Google"
-                aria-label="Entrar com Google"
-              >
-                <svg class="sso-icon" viewBox="0 0 24 24" width="18" height="18">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-                Google
-              </button>
+          <!-- Patient Login Tab -->
+          <div *ngIf="loginType === 'patient'" class="tab-content">
 
-              <button
-                type="button"
-                class="sso-button apple-button"
-                (click)="loginWithApple()"
-                [disabled]="(isLoading$ | async) ?? false"
-                title="Entrar com Apple"
-                aria-label="Entrar com Apple"
-              >
-                <svg class="sso-icon" viewBox="0 0 24 24" width="18" height="18">
-                  <path d="M17.05 13.5c-.91 2.92-.73 5.17 1.64 6.87.97.65 1.73 1.1 2.39 1.34.07-1.16 0-2.39-.35-3.82-.88-3.49-2.56-6.09-3.68-4.39zM6.14 5.4c-.37 1.15-.5 2.2-.46 3.38.06 1.85.58 3.66 1.72 5.01 1.14 1.34 2.68 2.07 4.45 2.07 1.24 0 2.47-.38 3.44-1.11.97-.73 1.66-1.81 2.02-2.98.36-1.17.34-2.39-.05-3.55-.39-1.16-1.14-2.15-2.06-2.82-1.84-1.37-5.05-1.07-6.61-.1-1.57.97-2.32 2.32-2.45 3.9zM12 1C5.93 1 1 5.93 1 12s4.93 11 11 11 11-4.93 11-11S18.07 1 12 1zm0 20c-4.97 0-9-4.03-9-9s4.03-9 9-9 9 4.03 9 9-4.03 9-9 9z" fill="#000"/>
-                </svg>
-                Apple
-              </button>
+            <div class="sso-section">
+              <div class="sso-buttons">
+                <button
+                  type="button"
+                  class="sso-button google-button"
+                  (click)="loginWithGoogle()"
+                  [disabled]="(isLoading$ | async) ?? false"
+                  title="Entrar com Google"
+                  aria-label="Entrar com Google"
+                >
+                  <svg class="sso-icon" viewBox="0 0 24 24" width="18" height="18">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                  </svg>
+                  Google
+                </button>
+
+                <button
+                  type="button"
+                  class="sso-button apple-button"
+                  (click)="loginWithApple()"
+                  [disabled]="(isLoading$ | async) ?? false"
+                  title="Entrar com Apple"
+                  aria-label="Entrar com Apple"
+                >
+                  <svg class="sso-icon" viewBox="0 0 24 24" width="18" height="18">
+                    <path d="M17.05 13.5c-.91 2.92-.73 5.17 1.64 6.87.97.65 1.73 1.1 2.39 1.34.07-1.16 0-2.39-.35-3.82-.88-3.49-2.56-6.09-3.68-4.39zM6.14 5.4c-.37 1.15-.5 2.2-.46 3.38.06 1.85.58 3.66 1.72 5.01 1.14 1.34 2.68 2.07 4.45 2.07 1.24 0 2.47-.38 3.44-1.11.97-.73 1.66-1.81 2.02-2.98.36-1.17.34-2.39-.05-3.55-.39-1.16-1.14-2.15-2.06-2.82-1.84-1.37-5.05-1.07-6.61-.1-1.57.97-2.32 2.32-2.45 3.9zM12 1C5.93 1 1 5.93 1 12s4.93 11 11 11 11-4.93 11-11S18.07 1 12 1zm0 20c-4.97 0-9-4.03-9-9s4.03-9 9-9 9 4.03 9 9-4.03 9-9 9z" fill="#000"/>
+                  </svg>
+                  Apple
+                </button>
+              </div>
+
+              <div class="sso-divider">
+                <span>ou</span>
+              </div>
             </div>
 
-            <div class="sso-divider">
-              <span>ou</span>
+            <form [formGroup]="patientForm" (ngSubmit)="onSubmitPatient()">
+              <div class="form-group">
+                <label for="patient-email">Email</label>
+                <input
+                  id="patient-email"
+                  type="email"
+                  formControlName="email"
+                  placeholder="seu.email@email.com"
+                />
+                <span class="error" *ngIf="patientForm.get('email')?.hasError('required') && patientForm.get('email')?.touched">
+                  Email é obrigatório
+                </span>
+                <span class="error" *ngIf="patientForm.get('email')?.hasError('email') && patientForm.get('email')?.touched">
+                  Email inválido
+                </span>
+              </div>
+
+              <div class="form-group">
+                <label for="patient-password">Senha</label>
+                <input
+                  id="patient-password"
+                  type="password"
+                  formControlName="password"
+                  placeholder="Sua senha segura"
+                  (keypress)="($event.key === 'Enter') ? onSubmitPatient() : null"
+                />
+                <span class="error" *ngIf="patientForm.get('password')?.hasError('required') && patientForm.get('password')?.touched">
+                  Senha é obrigatória
+                </span>
+              </div>
+
+              <div class="error-message" *ngIf="patientError">
+                {{ patientError }}
+              </div>
+
+              <app-primary-button
+                label="Entrar"
+                [disabled]="patientForm.invalid"
+                [isLoading]="(isLoading$ | async) ?? false"
+                (onClick)="onSubmitPatient()"
+              ></app-primary-button>
+            </form>
+
+            <div class="form-footer">
+              <a href="#forgot-password" class="link">Esqueceu sua senha?</a>
             </div>
 
-            <p class="sso-note">Login tradicional</p>
-
-            <div class="professional-note">
-              <p>👨‍⚕️ Profissional? Use a opção de login abaixo.</p>
+            <div class="signup-link">
+              Não tem conta? <a href="#signup" class="link">Cadastre-se aqui</a>
             </div>
           </div>
 
-          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input
-                id="email"
-                type="email"
-                formControlName="email"
-                placeholder="seu.email@email.com"
-                [attr.aria-label]="'Email'"
-              />
-              <span class="error" *ngIf="loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched">
-                Email é obrigatório
-              </span>
-              <span class="error" *ngIf="loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched">
-                Email inválido
-              </span>
+          <!-- Professional Login Tab -->
+          <div *ngIf="loginType === 'professional'" class="tab-content">
+            <form [formGroup]="professionalForm" (ngSubmit)="onSubmitProfessional()">
+              <div class="form-group">
+                <label for="prof-email">Email Profissional</label>
+                <input
+                  id="prof-email"
+                  type="email"
+                  formControlName="email"
+                  placeholder="seu.email@clinica.com"
+                />
+                <span class="error" *ngIf="professionalForm.get('email')?.hasError('required') && professionalForm.get('email')?.touched">
+                  Email é obrigatório
+                </span>
+                <span class="error" *ngIf="professionalForm.get('email')?.hasError('email') && professionalForm.get('email')?.touched">
+                  Email inválido
+                </span>
+              </div>
+
+              <div class="form-group">
+                <label for="prof-password">Senha</label>
+                <input
+                  id="prof-password"
+                  type="password"
+                  formControlName="password"
+                  placeholder="Sua senha segura"
+                  (keypress)="($event.key === 'Enter') ? onSubmitProfessional() : null"
+                />
+                <span class="error" *ngIf="professionalForm.get('password')?.hasError('required') && professionalForm.get('password')?.touched">
+                  Senha é obrigatória
+                </span>
+              </div>
+
+              <div class="error-message" *ngIf="professionalError">
+                {{ professionalError }}
+              </div>
+
+              <app-primary-button
+                label="Entrar"
+                [disabled]="professionalForm.invalid"
+                [isLoading]="(isLoading$ | async) ?? false"
+                (onClick)="onSubmitProfessional()"
+              ></app-primary-button>
+            </form>
+
+            <div class="form-footer">
+              <a href="#forgot-password" class="link">Esqueceu sua senha?</a>
             </div>
 
-            <div class="form-group">
-              <label for="password">Senha</label>
-              <input
-                id="password"
-                type="password"
-                formControlName="password"
-                placeholder="Sua senha segura"
-                (keypress)="($event.key === 'Enter') ? onSubmit() : null"
-                [attr.aria-label]="'Senha'"
-              />
-              <span class="error" *ngIf="loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched">
-                Senha é obrigatória
-              </span>
+            <div class="signup-link">
+              Não tem conta? <a href="#signup-professional" class="link">Cadastre-se como Profissional</a>
             </div>
-
-            <div class="error-message" *ngIf="loginError">
-              {{ loginError }}
-            </div>
-
-            <app-primary-button
-              label="Entrar"
-              [disabled]="loginForm.invalid"
-              [isLoading]="(isLoading$ | async) ?? false"
-              (onClick)="onSubmit()"
-            ></app-primary-button>
-          </form>
-
-          <div class="form-footer">
-            <a href="#forgot-password" class="link">Esqueceu sua senha?</a>
-          </div>
-
-          <div class="signup-link">
-            Não tem conta? <a href="#signup" class="link">Cadastre-se aqui</a>
           </div>
         </app-card>
       </div>
@@ -141,6 +206,41 @@ import { BehaviorSubject, Subject } from 'rxjs';
       text-align: center;
       color: #666;
       font-size: 13px;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .tab-button {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      background: transparent;
+      color: #999;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+    }
+
+    .tab-button:hover {
+      color: #667eea;
+    }
+
+    .tab-button.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+    }
+
+    .tab-content {
+      animation: fadeIn 0.3s ease-in;
     }
 
     .sso-section {
@@ -336,22 +436,6 @@ import { BehaviorSubject, Subject } from 'rxjs';
       text-decoration: underline;
     }
 
-    .professional-note {
-      background: rgba(102, 126, 234, 0.08);
-      border: 1px solid rgba(102, 126, 234, 0.2);
-      border-radius: 6px;
-      padding: 8px 10px;
-      margin-top: 12px;
-      text-align: center;
-    }
-
-    .professional-note p {
-      margin: 0;
-      font-size: 11px;
-      color: #667eea;
-      font-weight: 500;
-    }
-
     @keyframes slideUp {
       from {
         opacity: 0;
@@ -362,12 +446,24 @@ import { BehaviorSubject, Subject } from 'rxjs';
         transform: translateY(0);
       }
     }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
   `]
 })
 export class LoginComponent implements OnInit, OnDestroy {
-  loginForm!: FormGroup;
+  loginType: LoginType = 'patient';
+  patientForm!: FormGroup;
+  professionalForm!: FormGroup;
   isLoading$ = new BehaviorSubject<boolean>(false);
-  loginError: string | null = null;
+  patientError: string | null = null;
+  professionalError: string | null = null;
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -387,15 +483,20 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   private initializeForm(): void {
-    this.loginForm = this.fb.group({
+    this.patientForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
+    });
+
+    this.professionalForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
-  onSubmit(): void {
-    if (this.loginForm.valid) {
-      const credentials = this.loginForm.value;
+  onSubmitPatient(): void {
+    if (this.patientForm.valid) {
+      const credentials = this.patientForm.value;
       this.isLoading$.next(true);
       this.authService.login(credentials)
         .pipe(
@@ -409,7 +510,29 @@ export class LoginComponent implements OnInit, OnDestroy {
             this.router.navigate(['/dashboard']);
           },
           error: (error) => {
-            this.loginError = error.error?.message || 'Erro ao fazer login. Tente novamente.';
+            this.patientError = error.error?.message || 'Erro ao fazer login. Tente novamente.';
+          }
+        });
+    }
+  }
+
+  onSubmitProfessional(): void {
+    if (this.professionalForm.valid) {
+      const credentials = this.professionalForm.value;
+      this.isLoading$.next(true);
+      this.authService.login(credentials)
+        .pipe(
+          finalize(() => {
+            this.isLoading$.next(false);
+          }),
+          takeUntil(this.destroy$)
+        )
+        .subscribe({
+          next: () => {
+            this.router.navigate(['/dashboard']);
+          },
+          error: (error) => {
+            this.professionalError = error.error?.message || 'Erro ao fazer login. Tente novamente.';
           }
         });
     }
@@ -430,7 +553,7 @@ export class LoginComponent implements OnInit, OnDestroy {
           this.router.navigate(['/dashboard']);
         },
         error: (error) => {
-          this.loginError = 'Erro ao fazer login com Google. Tente novamente.';
+          this.patientError = 'Erro ao fazer login com Google. Tente novamente.';
           console.error('Google login error:', error);
         }
       });
@@ -451,13 +574,9 @@ export class LoginComponent implements OnInit, OnDestroy {
           this.router.navigate(['/dashboard']);
         },
         error: (error) => {
-          this.loginError = 'Erro ao fazer login com Apple. Tente novamente.';
+          this.patientError = 'Erro ao fazer login com Apple. Tente novamente.';
           console.error('Apple login error:', error);
         }
       });
-  }
-
-  navigateToSignup(): void {
-    this.router.navigate(['/signup/patient']);
   }
 }
