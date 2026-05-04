@@ -36,41 +36,56 @@ import { LoginComponent } from '../login/login.component';
       padding: 0;
       border: 0;
       width: 100%;
-      height: 100vh;
+      height: 100%;
+      box-sizing: border-box;
+      overflow: visible;
     }
 
     .container {
       display: flex;
+      flex-direction: row;
       height: 100%;
       width: 100%;
-      max-width: 100vw;
+      min-width: 100vw;
       margin: 0;
       padding: 0;
       border: 0;
+      overflow: hidden;
+      box-sizing: border-box;
+      flex: 1;
     }
 
     .questionnaire-section {
       flex: 0 0 70%;
+      width: 70%;
+      height: 100%;
+      min-height: 100%;
       overflow-y: auto;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      box-sizing: border-box;
     }
 
     .login-section {
       flex: 0 0 30%;
+      width: 30%;
+      height: 100%;
+      min-height: 100%;
       background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 40px 30px;
       overflow-y: auto;
+      box-sizing: border-box;
     }
 
     .login-content {
       width: 100%;
-      max-width: 350px;
+      max-width: 600px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      box-sizing: border-box;
       .app-title {
         font-size: 28px;
         font-weight: 700;
@@ -112,17 +127,21 @@ import { LoginComponent } from '../login/login.component';
     @media (max-width: 1200px) {
       .container {
         flex-direction: column;
+        width: 100%;
+        min-width: auto;
         height: auto;
       }
 
       .questionnaire-section {
         flex: 0 0 55vh;
         min-height: 55vh;
+        width: 100%;
       }
 
       .login-section {
         flex: 0 0 45vh;
         min-height: 45vh;
+        width: 100%;
         padding: 30px 20px;
       }
     }
@@ -130,22 +149,28 @@ import { LoginComponent } from '../login/login.component';
     @media (max-width: 768px) {
       .container {
         flex-direction: column;
+        width: 100%;
+        min-width: auto;
         height: auto;
       }
 
       .questionnaire-section {
         flex: 0 0 100%;
         min-height: 60vh;
+        width: 100%;
       }
 
       .login-section {
         flex: 0 0 auto;
         min-height: auto;
+        width: 100%;
         padding: 24px 16px;
         border-top: 3px solid rgba(255, 255, 255, 0.3);
       }
 
       .login-content {
+        max-width: 100%;
+
         .app-title {
           font-size: 22px;
           margin-bottom: 20px;
@@ -176,6 +201,8 @@ import { LoginComponent } from '../login/login.component';
       }
 
       .login-content {
+        max-width: 100%;
+
         .app-title {
           font-size: 18px;
           margin-bottom: 16px;
