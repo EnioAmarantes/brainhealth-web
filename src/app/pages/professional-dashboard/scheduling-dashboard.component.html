@@ -1,0 +1,92 @@
+<div class="scheduling-dashboard-container">
+  <!-- Header with gradient background -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1 class="header-title">Minha Agenda</h1>
+      <p class="header-subtitle">Gerencie suas consultas, anotações e relatórios</p>
+    </div>
+    @if (currentProfessional$ | async; as professional) {
+      <div class="header-right">
+        <div class="user-greeting">
+          <span class="greeting-text">{{ professional?.fullName || 'Profissional' }}</span>
+          <span class="crp-badge">{{ professional?.crp }}</span>
+        </div>
+        <button class="back-btn" (click)="backToDashboard()" title="Voltar ao Dashboard">
+          <span class="back-icon">←</span>
+        </button>
+      </div>
+    }
+  </header>
+
+  <!-- Statistics Bar -->
+  <div class="statistics-bar" *ngIf="!isLoading">
+    <div class="stat-item">
+      <span class="stat-number">{{ stats.total }}</span>
+      <span class="stat-label">Total</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number" [style.color]="getStatusColor('pending')">{{ stats.pending }}</span>
+      <span class="stat-label">Pendentes</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number" [style.color]="getStatusColor('confirmed')">{{ stats.confirmed }}</span>
+      <span class="stat-label">Confirmadas</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number" [style.color]="getStatusColor('inprogress')">{{ stats.inProgress }}</span>
+      <span class="stat-label">Em Progresso</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number" [style.color]="getStatusColor('completed')">{{ stats.completed }}</span>
+      <span class="stat-label">Concluídas</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number" [style.color]="getStatusColor('cancelled')">{{ stats.cancelled }}</span>
+      <span class="stat-label">Canceladas</span>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="tabs-container">
+    <div class="tabs-wrapper">
+      <button 
+        class="tab"
+        [class.active]="activeTab === 'agenda'"
+        (click)="switchTab('agenda')"
+        routerLink="/dashboard/professional/scheduling/agenda">
+        <span class="tab-icon">📅</span> Minha Agenda
+      </button>
+      <button 
+        class="tab"
+        [class.active]="activeTab === 'settings'"
+        (click)="switchTab('settings')"
+        routerLink="/dashboard/professional/scheduling/settings">
+        <span class="tab-icon">⚙️</span> Configurações
+      </button>
+    </div>
+    <button 
+      class="btn-new-appointment"
+      (click)="openAppointmentModal()"
+      title="Criar novo agendamento">
+      ➕ Nova Consulta
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-section" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Carregando dados...</p>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="tab-content" *ngIf="!isLoading">
+    <router-outlet></router-outlet>
+  </div>
+
+  <!-- Appointment Modal -->
+  <app-appointment-modal
+    [isOpen]="isAppointmentModalOpen"
+    (close)="closeAppointmentModal()"
+    (appointmentCreated)="onAppointmentCreated($event)">
+  </app-appointment-modal>
+</div>

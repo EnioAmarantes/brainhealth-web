@@ -1,0 +1,273 @@
+<div class="schedule-viewer-container">
+  <!-- Header -->
+  <div class="viewer-header">
+    <h1 class="page-title">Agenda de Consultas</h1>
+    <p class="page-subtitle">Visualize e gerencie seus compromissos</p>
+  </div>
+
+  <!-- Controls Bar -->
+  <div class="controls-bar">
+    <!-- View Switcher -->
+    <div class="view-switcher">
+      <button 
+        class="view-btn" 
+        [class.active]="viewMode === 'week'"
+        (click)="switchViewMode('week')"
+        title="Visualizar por semana">
+        Semana
+      </button>
+      <button 
+        class="view-btn" 
+        [class.active]="viewMode === 'month'"
+        (click)="switchViewMode('month')"
+        title="Visualizar por mês">
+        Mês
+      </button>
+    </div>
+
+    <!-- Date Controls -->
+    <div class="date-controls">
+      <button class="nav-btn" (click)="previousPeriod()" title="Período anterior">
+        ← Anterior
+      </button>
+      <div class="current-period">
+        {{ currentPeriodLabel }}
+      </div>
+      <button class="nav-btn" (click)="nextPeriod()" title="Próximo período">
+        Próximo →
+      </button>
+    </div>
+
+    <!-- Today Button -->
+    <button class="today-btn" (click)="goToToday()" title="Ir para hoje">
+      Hoje
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Carregando agenda...</p>
+  </div>
+
+  <!-- Error Alert -->
+  <div class="error-alert" *ngIf="errorMessage">
+    <div class="error-icon">⚠️</div>
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <!-- Weekly View -->
+  <div class="weekly-view" *ngIf="viewMode === 'week' && !isLoading">
+    <!-- Week Header -->
+    <div class="week-header">
+      <div class="week-day-header" *ngFor="let day of ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab']">
+        {{ day }}
+      </div>
+    </div>
+
+    <!-- Week Grid -->
+    <div class="week-grid">
+      <div 
+        class="day-cell"
+        *ngFor="let day of weekDays"
+        [class.today]="isToday(day.date)"
+        [class.other-month]="day.otherMonth">
+        <div class="day-number">
+          {{ day.date.getDate() }}
+        </div>
+        <div class="appointments-list">
+          <div 
+            *ngIf="day.appointments && day.appointments.length > 0; else noAppointments"
+            class="appointment-item"
+            *ngFor="let apt of day.appointments"
+            [ngClass]="'status-' + apt.status.toLowerCase()"
+            (click)="selectAppointment(apt)"
+            [title]="apt.patientName + ' - ' + apt.startTime">
+            <div class="apt-time">
+              {{ formatTime(apt.startTime) }}
+            </div>
+            <div class="apt-patient">
+              {{ apt.patientName }}
+            </div>
+          </div>
+          <ng-template #noAppointments>
+            <div class="no-appointments">—</div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly View -->
+  <div class="monthly-view" *ngIf="viewMode === 'month' && !isLoading">
+    <!-- Month Header -->
+    <div class="month-header">
+      <div class="month-day-header" *ngFor="let day of ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab']">
+        {{ day }}
+      </div>
+    </div>
+
+    <!-- Month Grid -->
+    <div class="month-grid">
+      <div 
+        class="month-cell"
+        *ngFor="let day of monthDays"
+        [class.today]="isToday(day.date)"
+        [class.other-month]="day.otherMonth"
+        [class.has-appointments]="day.appointments && day.appointments.length > 0">
+        <div class="month-day-number">
+          {{ day.date.getDate() }}
+        </div>
+        
+        <!-- Appointment Count Badge -->
+        <div class="appointment-count" *ngIf="day.appointments && day.appointments.length > 0">
+          <div class="count-badge">
+            {{ day.appointments.length }}
+          </div>
+        </div>
+
+        <!-- Appointments Preview (max 2) -->
+        <div class="appointments-preview" *ngIf="day.appointments && day.appointments.length > 0">
+          <div 
+            *ngFor="let apt of day.appointments.slice(0, 2)"
+            class="apt-preview"
+            (click)="selectAppointment(apt)"
+            [title]="apt.patientName">
+            {{ formatTime(apt.startTime) }} - {{ apt.patientName | slice:0:15 }}
+          </div>
+          <div 
+            class="apt-preview more"
+            *ngIf="day.appointments.length > 2"
+            (click)="selectDate(day.date)">
+            +{{ day.appointments.length - 2 }} mais
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Appointment Details Panel -->
+  <div class="details-panel" *ngIf="selectedAppointment">
+    <div class="panel-header">
+      <h3>Detalhes da Consulta</h3>
+      <button class="close-btn" (click)="closeDetails()" title="Fechar">×</button>
+    </div>
+
+    <div class="panel-content">
+      <!-- Patient Info -->
+      <div class="detail-group">
+        <label>Paciente</label>
+        <p>{{ selectedAppointment.patientName }}</p>
+      </div>
+
+      <!-- Date and Time -->
+      <div class="detail-group">
+        <label>Data e Hora</label>
+        <p>{{ formatDate(selectedAppointment.startTime) }}</p>
+        <p class="secondary">{{ formatTime(selectedAppointment.startTime) }} - {{ formatTime(selectedAppointment.endTime) }}</p>
+      </div>
+
+      <!-- Status -->
+      <div class="detail-group">
+        <label>Status</label>
+        <p [ngClass]="'status-' + selectedAppointment.status.toLowerCase()">
+          <span [ngClass]="'status-badge status-' + selectedAppointment.status.toLowerCase()">
+            {{ getStatusLabel(selectedAppointment.status) }}
+          </span>
+        </p>
+      </div>
+
+      <!-- Confirmation Info -->
+      <div class="detail-group" *ngIf="selectedAppointment.status === 'Confirmed'">
+        <label>Confirmada em</label>
+        <p class="secondary">{{ formatDateTime(selectedAppointment.confirmedAt) }}</p>
+      </div>
+
+      <!-- Cancellation Info -->
+      <div class="detail-group" *ngIf="selectedAppointment.status === 'Cancelled'">
+        <label>Cancelada em</label>
+        <p class="secondary">{{ formatDateTime(selectedAppointment.cancelledAt) }}</p>
+      </div>
+
+      <!-- Notes -->
+      <div class="detail-group" *ngIf="selectedAppointment.hasNote">
+        <label>Anotações</label>
+        <p class="secondary">Anotações registradas para esta sessão</p>
+      </div>
+
+      <!-- Report -->
+      <div class="detail-group" *ngIf="selectedAppointment.hasReport">
+        <label>Relatório</label>
+        <p class="secondary">Relatório gerado após conclusão</p>
+      </div>
+
+      <!-- Actions -->
+      <div class="panel-actions">
+        <button 
+          class="btn btn-secondary"
+          (click)="closeDetails()">
+          Fechar
+        </button>
+        <button 
+          class="btn btn-primary"
+          *ngIf="selectedAppointment.status === 'Pending'"
+          (click)="confirmAppointment(selectedAppointment)"
+          title="Confirmar esta consulta">
+          Confirmar
+        </button>
+        <button 
+          class="btn btn-warning"
+          *ngIf="canCancelAppointment(selectedAppointment)"
+          (click)="cancelAppointment(selectedAppointment)"
+          title="Cancelar esta consulta">
+          Cancelar
+        </button>
+        <button 
+          class="btn btn-success"
+          *ngIf="selectedAppointment.status === 'Confirmed' || selectedAppointment.status === 'InProgress'"
+          (click)="openSessionNotes(selectedAppointment)"
+          title="Adicionar anotações de sessão">
+          Anotações
+        </button>
+        <button 
+          class="btn btn-info"
+          *ngIf="selectedAppointment.hasReport"
+          (click)="viewReport(selectedAppointment)"
+          title="Ver relatório da sessão">
+          Relatório
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Section -->
+  <div class="statistics-section" *ngIf="!isLoading && statistics">
+    <h3>Resumo da Agenda</h3>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total de Consultas</div>
+        <div class="stat-value">{{ statistics.total }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Confirmadas</div>
+        <div class="stat-value confirmed">{{ statistics.confirmed }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pendentes</div>
+        <div class="stat-value pending">{{ statistics.pending }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Em Progresso</div>
+        <div class="stat-value in-progress">{{ statistics.inProgress }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Concluídas</div>
+        <div class="stat-value">{{ statistics.completed }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Canceladas</div>
+        <div class="stat-value">{{ statistics.cancelled }}</div>
+      </div>
+    </div>
+  </div>
+</div>

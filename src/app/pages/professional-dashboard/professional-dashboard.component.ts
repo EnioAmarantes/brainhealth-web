@@ -4,9 +4,10 @@ import { Router } from '@angular/router';
 import { AuthService } from '@app/services/auth.service';
 import { ProfessionalService } from '@app/services/professional.service';
 import { PrimaryButtonComponent, SecondaryButtonComponent, CardComponent, LoadingIndicatorComponent } from '@app/components/shared';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, forkJoin } from 'rxjs';
 import { Professional } from '@app/models/professional.model';
-import { finalize } from 'rxjs/operators';
+import { finalize, switchMap, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { UserType } from '@app/models/auth.model';
 import { ProfessionalProfile } from '@app/models/professional-profile.model';
 
@@ -49,11 +50,12 @@ import { ProfessionalProfile } from '@app/models/professional-profile.model';
           @if (!(isLoading$ | async)) {
           <!-- Top KPI Cards -->
           <section class="kpi-section">
-            <div class="kpi-card kpi-patients" (mouseenter)="onKpiHover('patients')" (mouseleave)="onKpiHover(null)">
+            <div class="kpi-card kpi-patients" (click)="navigateToScheduling()" (mouseenter)="onKpiHover('patients')" (mouseleave)="onKpiHover(null)" title="Clique para acessar a agenda">
               <div class="kpi-icon">👥</div>
               <div class="kpi-content">
                 <div class="kpi-label">Pacientes Ativos</div>
                 <div class="kpi-value">{{ professional.totalPatients }}</div>
+                <div class="kpi-hint">Clique para agendar →</div>
               </div>
               <div class="kpi-accent"></div>
             </div>
@@ -306,46 +308,38 @@ export class ProfessionalDashboardComponent implements OnInit {
     const currentUser = this.authService.getCurrentUser();
     
     if (currentUser && currentUser.role.toUpperCase() === UserType.PROFESSIONAL) {
-      // Busca dados do servidor
+      // Paralelizar requisições para melhor performance
       this.professionalService.getCurrentProfessional()
         .pipe(
+          switchMap((professional) => {
+            this.currentProfessional$.next(professional);
+            // Fazer requisições em paralelo
+            return forkJoin({
+              current: of(professional),
+              profile: this.professionalService.getProfessionalProfile(professional.id)
+            });
+          }),
           finalize(() => {
             this.isLoading$.next(false);
             this.cdr.markForCheck();
+          }),
+          catchError((error) => {
+            console.error('Erro ao carregar dados do profissional:', error);
+            this.router.navigate(['/']);
+            return of(null);
           })
         )
         .subscribe({
-          next: (professional) => {
-            this.currentProfessional$.next(professional);
-            this.loadProfileData(professional.id);
-          },
-          error: (error) => {
-            console.error('Erro ao carregar profissional:', error);
-              this.router.navigate(['/']);
+          next: (result) => {
+            if (result?.profile) {
+              console.log("Current Profile: " + JSON.stringify(result.profile?.profile));
+              this.professionalProfile$.next(result.profile?.profile);
             }
-          });
+          }
+        });
     } else {
       this.router.navigate(['/']);
     }
-  }
-
-  private loadProfileData(professionalId: string): void {
-    this.professionalService.getProfessionalProfile(professionalId)
-      .pipe(
-        finalize(() => {
-          this.isLoading$.next(false);
-          this.cdr.markForCheck();
-        })
-      )
-      .subscribe({
-        next: (professional) => {
-          console.log("Current Profile: " + JSON.stringify(professional?.profile));
-          this.professionalProfile$.next(professional?.profile);
-        },
-        error: (error) => {
-          console.error('Erro ao carregar perfil:', error);
-        }
-      });
   }
 
   getAvailableSlots(): number {
@@ -394,5 +388,9 @@ export class ProfessionalDashboardComponent implements OnInit {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/']);
+  }
+
+  navigateToScheduling(): void {
+    this.router.navigate(['/dashboard/professional/scheduling']);
   }
 }

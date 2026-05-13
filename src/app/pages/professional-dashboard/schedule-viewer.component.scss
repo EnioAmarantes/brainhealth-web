@@ -1,0 +1,602 @@
+.schedule-viewer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  .viewer-header {
+    text-align: center;
+    margin-bottom: 2rem;
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin: 0 0 0.5rem;
+    }
+
+    .page-subtitle {
+      font-size: 1rem;
+      color: #666;
+      margin: 0;
+    }
+  }
+
+  .controls-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+
+    .view-switcher {
+      display: flex;
+      gap: 0.5rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 0.25rem;
+      background: #f5f5f5;
+
+      .view-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-weight: 500;
+        color: #666;
+        border-radius: 4px;
+        transition: all 0.2s;
+
+        &:hover {
+          background: white;
+        }
+
+        &.active {
+          background: white;
+          color: #2563eb;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+      }
+    }
+
+    .date-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      .nav-btn {
+        width: 36px;
+        height: 36px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+
+        &:hover {
+          background: #f5f5f5;
+          border-color: #2563eb;
+          color: #2563eb;
+        }
+      }
+
+      .current-period {
+        min-width: 200px;
+        text-align: center;
+        font-weight: 500;
+        color: #333;
+      }
+    }
+
+    .today-btn {
+      padding: 0.5rem 1rem;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        background: #1d4ed8;
+      }
+    }
+  }
+
+  .loading-state,
+  .error-alert {
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .loading-state {
+    background: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+
+    p {
+      color: #666;
+    }
+  }
+
+  .error-alert {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+
+    .error-icon {
+      font-size: 1.5rem;
+    }
+
+    p {
+      margin: 0;
+      color: #856404;
+    }
+  }
+
+  // Weekly View
+  .weekly-view {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+
+    .week-header {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+
+      .week-day-header {
+        padding: 0.75rem;
+        text-align: center;
+        font-weight: 600;
+        color: #666;
+        font-size: 0.9rem;
+      }
+    }
+
+    .week-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.5rem;
+
+      .day-cell {
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 0.75rem;
+        min-height: 120px;
+        background: white;
+        transition: all 0.2s;
+
+        &:hover {
+          border-color: #2563eb;
+          box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+        }
+
+        &.today {
+          background: #eff6ff;
+          border-color: #2563eb;
+        }
+
+        &.other-month {
+          background: #f9fafb;
+          opacity: 0.6;
+        }
+
+        .day-number {
+          font-weight: 600;
+          margin-bottom: 0.5rem;
+          color: #333;
+          font-size: 0.95rem;
+        }
+
+        .appointments-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+
+          .appointment-item {
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+
+            .apt-time {
+              font-weight: 600;
+            }
+
+            .apt-patient {
+              color: white;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+
+            &.status-confirmed {
+              background: #d1fae5;
+              color: #065f46;
+
+              .apt-patient {
+                color: #065f46;
+              }
+
+              &:hover {
+                background: #a7f3d0;
+              }
+            }
+
+            &.status-pending {
+              background: #fef3c7;
+              color: #92400e;
+
+              .apt-patient {
+                color: #92400e;
+              }
+
+              &:hover {
+                background: #fde68a;
+              }
+            }
+
+            &.status-in-progress {
+              background: #dbeafe;
+              color: #1e40af;
+
+              .apt-patient {
+                color: #1e40af;
+              }
+
+              &:hover {
+                background: #bfdbfe;
+              }
+            }
+          }
+
+          .no-appointments {
+            color: #d1d5db;
+            text-align: center;
+            padding: 0.5rem 0;
+          }
+        }
+      }
+    }
+  }
+
+  // Monthly View
+  .monthly-view {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+
+    .month-header {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+
+      .month-day-header {
+        padding: 0.75rem;
+        text-align: center;
+        font-weight: 600;
+        color: #666;
+        font-size: 0.9rem;
+      }
+    }
+
+    .month-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.5rem;
+
+      .month-cell {
+        aspect-ratio: 1;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 0.5rem;
+        background: white;
+        position: relative;
+        transition: all 0.2s;
+
+        &:hover {
+          border-color: #2563eb;
+          box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+        }
+
+        &.today {
+          background: #eff6ff;
+          border-color: #2563eb;
+          border-width: 2px;
+        }
+
+        &.other-month {
+          background: #f9fafb;
+          opacity: 0.5;
+        }
+
+        &.has-appointments {
+          background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(96, 165, 250, 0.05));
+        }
+
+        .month-day-number {
+          font-weight: 600;
+          color: #333;
+          font-size: 0.9rem;
+          margin-bottom: 0.25rem;
+        }
+
+        .appointment-count {
+          position: absolute;
+          top: 0.25rem;
+          right: 0.25rem;
+
+          .count-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background: #2563eb;
+            color: white;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            font-weight: 600;
+          }
+        }
+
+        .appointments-preview {
+          display: flex;
+          flex-direction: column;
+          gap: 0.15rem;
+          font-size: 0.7rem;
+
+          .apt-preview {
+            padding: 0.15rem 0.25rem;
+            background: #dbeafe;
+            color: #1e40af;
+            border-radius: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+            &.more {
+              background: #f0f9ff;
+              color: #0369a1;
+              font-style: italic;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Details Panel
+  .details-panel {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem;
+      border-bottom: 1px solid #e5e7eb;
+
+      h3 {
+        margin: 0;
+        color: #1a1a1a;
+      }
+
+      .close-btn {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #999;
+        transition: color 0.2s;
+
+        &:hover {
+          color: #333;
+        }
+      }
+    }
+
+    .panel-content {
+      padding: 1.5rem;
+
+      .detail-group {
+        margin-bottom: 1.5rem;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        label {
+          display: block;
+          font-weight: 600;
+          color: #666;
+          font-size: 0.85rem;
+          margin-bottom: 0.5rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        p {
+          margin: 0.25rem 0;
+          color: #333;
+
+          &.secondary {
+            font-size: 0.9rem;
+            color: #666;
+          }
+
+          &.status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.85rem;
+
+            &.status-pending {
+              background: #fef3c7;
+              color: #92400e;
+            }
+
+            &.status-confirmed {
+              background: #d1fae5;
+              color: #065f46;
+            }
+
+            &.status-inprogress {
+              background: #dbeafe;
+              color: #1e40af;
+            }
+
+            &.status-completed {
+              background: #d1d5db;
+              color: #374151;
+            }
+
+            &.status-cancelled {
+              background: #fee2e2;
+              color: #991b1b;
+            }
+          }
+        }
+      }
+
+      .panel-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e5e7eb;
+
+        button {
+          min-width: 120px;
+        }
+      }
+    }
+  }
+
+  // Statistics
+  .statistics-section {
+    h3 {
+      margin: 0 0 1.5rem;
+      font-size: 1.25rem;
+      color: #1a1a1a;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+
+      .stat-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+
+        .stat-label {
+          font-size: 0.9rem;
+          color: #666;
+          margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+          font-size: 2rem;
+          font-weight: 700;
+          color: #333;
+
+          &.confirmed {
+            color: #10b981;
+          }
+
+          &.pending {
+            color: #f59e0b;
+          }
+
+          &.in-progress {
+            color: #3b82f6;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .schedule-viewer-container {
+    padding: 1rem;
+
+    .viewer-header {
+      .page-title {
+        font-size: 1.5rem;
+      }
+    }
+
+    .controls-bar {
+      flex-direction: column;
+      align-items: stretch;
+
+      .view-switcher,
+      .date-controls,
+      .today-btn {
+        width: 100%;
+      }
+
+      .date-controls {
+        justify-content: space-between;
+      }
+
+      .current-period {
+        min-width: auto;
+      }
+    }
+
+    .weekly-view,
+    .monthly-view {
+      .week-header,
+      .week-grid,
+      .month-header,
+      .month-grid {
+        grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+      }
+
+      .day-cell {
+        min-height: 80px;
+      }
+    }
+
+    .statistics-section {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  }
+}

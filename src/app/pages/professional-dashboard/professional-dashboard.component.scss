@@ -271,6 +271,11 @@ $breakpoint-xl: 1280px;
     .kpi-accent {
       transform: scaleX(1.1);
     }
+
+    .kpi-hint {
+      opacity: 1;
+      color: $primary-color;
+    }
   }
 
   .kpi-icon {
@@ -295,6 +300,15 @@ $breakpoint-xl: 1280px;
       font-weight: 700;
       color: $primary-color;
       margin: 0;
+    }
+
+    .kpi-hint {
+      font-size: $font-size-xs;
+      color: $neutral-400;
+      margin: $space-xs 0 0 0;
+      font-weight: 400;
+      opacity: 0;
+      transition: all $transition-base;
     }
   }
 

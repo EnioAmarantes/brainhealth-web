@@ -1,0 +1,109 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <div class="header-content">
+        <h2 class="modal-title">Relatório da Sessão</h2>
+        <p class="patient-info">{{ patientName }}</p>
+      </div>
+      <button class="close-btn" (click)="onClose()" title="Fechar">×</button>
+    </div>
+
+    <!-- Loading State -->
+    <div class="modal-body" *ngIf="isLoading">
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Carregando relatório...</p>
+      </div>
+    </div>
+
+    <!-- Report View -->
+    <div class="report-container" *ngIf="!isLoading && report">
+      <!-- Error Alert -->
+      <div class="error-alert" *ngIf="errorMessage">
+        <div class="error-icon">⚠️</div>
+        <p>{{ errorMessage }}</p>
+      </div>
+
+      <!-- Success Alert -->
+      <div class="success-alert" *ngIf="successMessage">
+        <div class="success-icon">✓</div>
+        <p>{{ successMessage }}</p>
+      </div>
+
+      <!-- Share Status -->
+      <div class="share-status" [class.shared]="shareStatus.shared">
+        <div class="status-icon">
+          {{ shareStatus.shared ? '✓ Compartilhado' : '○ Não Compartilhado' }}
+        </div>
+        <div class="status-details">
+          <p class="status-label">
+            {{ shareStatus.shared ? 'Compartilhado com o paciente' : 'Ainda não compartilhado' }}
+          </p>
+          <p class="status-date" *ngIf="shareStatus.sharedAt">
+            Em {{ formatDateTime(shareStatus.sharedAt) }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Report Content -->
+      <div class="report-content">
+        <div class="content-wrapper">
+          <p *ngFor="let line of reportContent" class="report-line">
+            {{ line }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div class="modal-body" *ngIf="!isLoading && !report && errorMessage">
+      <div class="error-state">
+        <div class="error-icon">⚠️</div>
+        <p class="error-message">{{ errorMessage }}</p>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer" *ngIf="!isLoading && report">
+      <button 
+        type="button"
+        class="btn btn-secondary"
+        (click)="onClose()">
+        Fechar
+      </button>
+      <button 
+        type="button"
+        class="btn btn-secondary"
+        (click)="onPrint()"
+        title="Imprimir relatório">
+        🖨️ Imprimir
+      </button>
+      <button 
+        type="button"
+        class="btn btn-secondary"
+        (click)="onDownload()"
+        title="Baixar relatório">
+        ⬇️ Baixar
+      </button>
+      <button 
+        type="button"
+        class="btn btn-primary"
+        *ngIf="!shareStatus.shared"
+        (click)="onShareWithPatient()"
+        [disabled]="isSharing"
+        title="Compartilhar com o paciente">
+        <span *ngIf="!isSharing">📤 Compartilhar com Paciente</span>
+        <span *ngIf="isSharing">Compartilhando...</span>
+      </button>
+      <button 
+        type="button"
+        class="btn btn-success"
+        *ngIf="shareStatus.shared"
+        disabled
+        title="Já foi compartilhado">
+        ✓ Compartilhado
+      </button>
+    </div>
+  </div>
+</div>

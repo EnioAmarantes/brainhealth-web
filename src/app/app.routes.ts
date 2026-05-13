@@ -54,6 +54,11 @@ export const routes: Routes = [
         data: { title: 'Dashboard Profissional' }
       },
       {
+        path: 'professional/scheduling',
+        loadChildren: () => import('./pages/professional-dashboard/professional-scheduling.routes').then(m => m.PROFESSIONAL_SCHEDULING_ROUTES),
+        data: { title: 'Agendamento' }
+      },
+      {
         path: 'patient',
         loadComponent: () => import('./pages/patient-dashboard/patient-dashboard.component').then(m => m.PatientDashboardComponent),
         data: { title: 'Meu Dashboard' }

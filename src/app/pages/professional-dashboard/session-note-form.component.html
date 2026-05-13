@@ -1,0 +1,173 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <div class="header-content">
+        <h2 class="modal-title">Anotações da Sessão</h2>
+        <p class="patient-info">{{ patientName }}</p>
+      </div>
+      <button class="close-btn" (click)="onClose()" title="Fechar">×</button>
+    </div>
+
+    <!-- Loading State -->
+    <div class="modal-body" *ngIf="isLoading">
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Carregando anotações...</p>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="noteForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading">
+      <!-- Error Alert -->
+      <div class="error-alert" *ngIf="errorMessage">
+        <div class="error-icon">⚠️</div>
+        <p>{{ errorMessage }}</p>
+      </div>
+
+      <!-- Success Alert -->
+      <div class="success-alert" *ngIf="successMessage">
+        <div class="success-icon">✓</div>
+        <p>{{ successMessage }}</p>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <!-- Mood Rating -->
+        <div class="form-group">
+          <label for="patientMoodRating">Humor do Paciente *</label>
+          <div class="mood-selector">
+            <div 
+              *ngFor="let mood of moodRatings"
+              class="mood-option"
+              [class.selected]="noteForm.get('patientMoodRating')?.value === mood.value"
+              (click)="noteForm.get('patientMoodRating')?.setValue(mood.value)">
+              <span class="mood-icon">{{ mood.icon }}</span>
+              <span class="mood-label">{{ mood.label }}</span>
+            </div>
+          </div>
+          <div class="form-help">
+            Selecione o estado emocional do paciente durante a sessão
+          </div>
+          <div class="form-error" *ngIf="noteForm.get('patientMoodRating')?.invalid && noteForm.get('patientMoodRating')?.touched">
+            Selecione um nível de humor
+          </div>
+        </div>
+
+        <!-- Topics Discussed -->
+        <div class="form-group">
+          <label for="topicsDiscussed">Tópicos Discutidos *</label>
+          <textarea 
+            id="topicsDiscussed"
+            formControlName="topicsDiscussed"
+            class="form-textarea"
+            placeholder="Descreva os principais tópicos abordados na sessão..."
+            rows="4"></textarea>
+          <div class="char-count">
+            {{ wordCount['topicsDiscussed'] }} palavras
+          </div>
+          <div class="form-error" *ngIf="noteForm.get('topicsDiscussed')?.invalid && noteForm.get('topicsDiscussed')?.touched">
+            Mínimo de 10 palavras
+          </div>
+        </div>
+
+        <!-- Progress Observations -->
+        <div class="form-group">
+          <label for="progressObservations">Observações de Progresso *</label>
+          <textarea 
+            id="progressObservations"
+            formControlName="progressObservations"
+            class="form-textarea"
+            placeholder="Descreva os progressos e observações da sessão..."
+            rows="4"></textarea>
+          <div class="char-count">
+            {{ wordCount['progressObservations'] }} palavras
+          </div>
+          <div class="form-error" *ngIf="noteForm.get('progressObservations')?.invalid && noteForm.get('progressObservations')?.touched">
+            Mínimo de 10 palavras
+          </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="form-group">
+          <label for="recommendations">Recomendações *</label>
+          <textarea 
+            id="recommendations"
+            formControlName="recommendations"
+            class="form-textarea"
+            placeholder="Descreva as recomendações para o próxima sessão ou para o paciente seguir..."
+            rows="4"></textarea>
+          <div class="char-count">
+            {{ wordCount['recommendations'] }} palavras
+          </div>
+          <div class="form-error" *ngIf="noteForm.get('recommendations')?.invalid && noteForm.get('recommendations')?.touched">
+            Mínimo de 10 palavras
+          </div>
+        </div>
+
+        <!-- Homework -->
+        <div class="form-group">
+          <label for="homework">Lição de Casa (Opcional)</label>
+          <textarea 
+            id="homework"
+            formControlName="homework"
+            class="form-textarea"
+            placeholder="Tarefas ou exercícios para o paciente fazer até a próxima sessão..."
+            rows="3"></textarea>
+          <div class="form-help">
+            Deixe em branco se não houver tarefas
+          </div>
+        </div>
+
+        <!-- Report Generation Info -->
+        <div class="report-info" *ngIf="existingNote && !reportGenerated">
+          <div class="info-icon">ℹ️</div>
+          <div class="info-content">
+            <p class="info-title">Relatório Disponível</p>
+            <p class="info-text">
+              Após salvar as anotações, você poderá gerar um relatório formatado
+            </p>
+          </div>
+        </div>
+
+        <!-- Report Generated Message -->
+        <div class="report-success" *ngIf="reportGenerated">
+          <div class="success-icon">✓</div>
+          <div class="success-content">
+            <p class="success-title">Relatório Gerado</p>
+            <p class="success-text">
+              O relatório foi gerado com sucesso. Você pode visualizá-lo na sessão concluída.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button 
+          type="button"
+          class="btn btn-secondary"
+          (click)="onClose()"
+          [disabled]="isSaving || isGeneratingReport">
+          Cancelar
+        </button>
+        <button 
+          type="button"
+          class="btn btn-info"
+          *ngIf="canGenerateReport"
+          (click)="onGenerateReport()"
+          [disabled]="!existingNote || isGeneratingReport || reportGenerated">
+          <span *ngIf="!isGeneratingReport">Gerar Relatório</span>
+          <span *ngIf="isGeneratingReport">Gerando...</span>
+        </button>
+        <button 
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="!noteForm.valid || isSaving">
+          <span *ngIf="!isSaving">{{ existingNote ? 'Atualizar' : 'Salvar' }} Anotações</span>
+          <span *ngIf="isSaving">Salvando...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

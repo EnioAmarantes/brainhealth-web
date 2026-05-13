@@ -1,0 +1,153 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h2 class="modal-title">Agendar Nova Consulta</h2>
+      <button class="close-btn" (click)="onClose()" title="Fechar">×</button>
+    </div>
+
+    <!-- Loading State -->
+    <div class="modal-body" *ngIf="isLoading">
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Carregando dados...</p>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading">
+      <!-- Error Alert -->
+      <div class="error-alert" *ngIf="errorMessage">
+        <div class="error-icon">⚠️</div>
+        <p>{{ errorMessage }}</p>
+      </div>
+
+      <!-- Success Alert -->
+      <div class="success-alert" *ngIf="successMessage">
+        <div class="success-icon">✓</div>
+        <p>{{ successMessage }}</p>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <!-- Patient Selection -->
+        <div class="form-group">
+          <label for="patientId">Paciente *</label>
+          <select 
+            id="patientId"
+            formControlName="patientId"
+            class="form-input">
+            <option value="">Selecione um paciente...</option>
+            <option *ngFor="let patient of patients" [value]="patient.id">
+              {{ patient.name }} ({{ patient.email }})
+            </option>
+          </select>
+          <div class="form-error" *ngIf="appointmentForm.get('patientId')?.invalid && appointmentForm.get('patientId')?.touched">
+            Selecione um paciente
+          </div>
+        </div>
+
+        <!-- Appointment Date -->
+        <div class="form-group">
+          <label for="appointmentDate">Data da Consulta *</label>
+          <input 
+            type="date"
+            id="appointmentDate"
+            formControlName="appointmentDate"
+            [min]="getTodayPlusOne()"
+            class="form-input">
+          <div class="form-error" *ngIf="appointmentForm.get('appointmentDate')?.invalid && appointmentForm.get('appointmentDate')?.touched">
+            Selecione uma data válida
+          </div>
+        </div>
+
+        <!-- Appointment Time -->
+        <div class="form-group">
+          <label for="appointmentTime">Horário *</label>
+          <div *ngIf="availableTimeSlots.length > 0; else noTimeSlotsAvailable">
+            <select 
+              id="appointmentTime"
+              formControlName="appointmentTime"
+              class="form-input">
+              <option value="">Selecione um horário...</option>
+              <option 
+                *ngFor="let slot of availableTimeSlots"
+                [value]="slot.time"
+                [disabled]="!slot.available">
+                {{ slot.time }} {{ !slot.available ? '(Indisponível)' : '' }}
+              </option>
+            </select>
+          </div>
+          <ng-template #noTimeSlotsAvailable>
+            <p class="form-help">Selecione uma data para ver horários disponíveis</p>
+          </ng-template>
+          <div class="form-error" *ngIf="appointmentForm.get('appointmentTime')?.invalid && appointmentForm.get('appointmentTime')?.touched">
+            Selecione um horário
+          </div>
+        </div>
+
+        <!-- Recurring Options -->
+        <div class="form-group">
+          <label for="recurring">Recorrência</label>
+          <select 
+            id="recurring"
+            formControlName="recurring"
+            class="form-input">
+            <option *ngFor="let option of recurringOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+          <div class="form-help">
+            Configure se esta consulta se repete regularmente
+          </div>
+        </div>
+
+        <!-- Recurring Until Date -->
+        <div class="form-group" *ngIf="isRecurring">
+          <label for="recurringUntil">Recorrência Válida Até</label>
+          <input 
+            type="date"
+            id="recurringUntil"
+            formControlName="recurringUntil"
+            [min]="minRecurringDate"
+            class="form-input">
+          <div class="form-help">
+            Data final para a recorrência da consulta
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group">
+          <label for="notes">Observações</label>
+          <textarea 
+            id="notes"
+            formControlName="notes"
+            class="form-textarea"
+            placeholder="Adicione observações sobre a consulta..."
+            rows="3"></textarea>
+          <div class="form-help">
+            Informações adicionais sobre o agendamento (opcional)
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button 
+          type="button"
+          class="btn btn-secondary"
+          (click)="onClose()"
+          [disabled]="isSaving">
+          Cancelar
+        </button>
+        <button 
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="!appointmentForm.valid || isSaving">
+          <span *ngIf="!isSaving">Agendar Consulta</span>
+          <span *ngIf="isSaving">Agendando...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

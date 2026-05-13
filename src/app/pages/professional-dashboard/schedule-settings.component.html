@@ -1,0 +1,226 @@
+<div class="schedule-settings-container">
+  <!-- Header -->
+  <div class="settings-header">
+    <h1 class="page-title">Configurar Agenda</h1>
+    <p class="page-subtitle">Defina sua disponibilidade e preferências de agendamento</p>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Carregando configurações...</p>
+  </div>
+
+  <!-- Error Alert -->
+  <div class="error-alert" *ngIf="errorMessage">
+    <div class="error-icon">⚠️</div>
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <!-- Success Alert -->
+  <div class="success-alert" *ngIf="successMessage">
+    <div class="success-icon">✓</div>
+    <p>{{ successMessage }}</p>
+  </div>
+
+  <!-- Form -->
+  <form [formGroup]="settingsForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading" class="settings-form">
+    <!-- Session Capacity Section -->
+    <div class="form-section">
+      <div class="section-header">
+        <h2>Capacidade de Sessões</h2>
+        <p>Defina quantas sessões você pode atender por semana</p>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="maxSessionsPerWeek">Máximo de Sessões por Semana</label>
+          <input 
+            type="number" 
+            id="maxSessionsPerWeek"
+            formControlName="maxSessionsPerWeek"
+            min="1"
+            max="50"
+            class="form-input"
+            placeholder="Ex: 20">
+          <div class="form-help">
+            Quantas sessões você pode conduzir durante uma semana de trabalho
+          </div>
+          <div class="form-error" *ngIf="getFormError('maxSessionsPerWeek')">
+            {{ getFormError('maxSessionsPerWeek') }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Work Schedule Section -->
+    <div class="form-section">
+      <div class="section-header">
+        <h2>Horário de Trabalho</h2>
+        <p>Defina seus dias e horários de funcionamento</p>
+      </div>
+
+      <!-- Workdays Selection -->
+      <div class="form-group">
+        <label>Dias de Trabalho</label>
+        <div class="workdays-grid">
+          <div class="workday-item" *ngFor="let day of weekDays">
+            <input 
+              type="checkbox" 
+              [id]="'workday-' + day"
+              [value]="day"
+              (change)="onWorkdayChange($event, day)"
+              [checked]="isWorkdaySelected(day)"
+              class="workday-checkbox">
+            <label [for]="'workday-' + day" class="workday-label">
+              {{ getDayName(day) }}
+            </label>
+          </div>
+        </div>
+        <div class="form-help">
+          Selecione os dias da semana em que você trabalha
+        </div>
+      </div>
+
+      <!-- Work Hours -->
+      <div class="form-group">
+        <label>Horário de Funcionamento</label>
+        <div class="time-inputs">
+          <div class="time-input-group">
+            <label for="workDayStart">Início</label>
+            <input 
+              type="time" 
+              id="workDayStart"
+              formControlName="workDayStart"
+              class="form-input"
+              placeholder="08:00">
+            <div class="form-error" *ngIf="getFormError('workDayStart')">
+              {{ getFormError('workDayStart') }}
+            </div>
+          </div>
+
+          <div class="time-input-group">
+            <label for="workDayEnd">Término</label>
+            <input 
+              type="time" 
+              id="workDayEnd"
+              formControlName="workDayEnd"
+              class="form-input"
+              placeholder="18:00">
+            <div class="form-error" *ngIf="getFormError('workDayEnd')">
+              {{ getFormError('workDayEnd') }}
+            </div>
+          </div>
+        </div>
+        <div class="form-help">
+          Defina o intervalo de horas que você atende pacientes
+        </div>
+      </div>
+    </div>
+
+    <!-- Session Configuration Section -->
+    <div class="form-section">
+      <div class="section-header">
+        <h2>Configuração de Sessões</h2>
+        <p>Personalize os detalhes das sessões</p>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="sessionDurationMinutes">Duração da Sessão (minutos)</label>
+          <input 
+            type="number" 
+            id="sessionDurationMinutes"
+            formControlName="sessionDurationMinutes"
+            min="15"
+            max="180"
+            step="15"
+            class="form-input"
+            placeholder="Ex: 60">
+          <div class="form-help">
+            Quanto tempo você dedica a cada sessão
+          </div>
+          <div class="form-error" *ngIf="getFormError('sessionDurationMinutes')">
+            {{ getFormError('sessionDurationMinutes') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="cancellationDeadlineHours">Prazo para Cancelamento (horas)</label>
+          <input 
+            type="number" 
+            id="cancellationDeadlineHours"
+            formControlName="cancellationDeadlineHours"
+            min="1"
+            max="168"
+            class="form-input"
+            placeholder="Ex: 24">
+          <div class="form-help">
+            Com quantas horas de antecedência os pacientes podem cancelar
+          </div>
+          <div class="form-error" *ngIf="getFormError('cancellationDeadlineHours')">
+            {{ getFormError('cancellationDeadlineHours') }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Current Settings Display -->
+    <div class="current-settings" *ngIf="settingsForm.valid">
+      <h3>Resumo das Configurações</h3>
+      <div class="settings-summary">
+        <div class="summary-item">
+          <span class="summary-label">Sessões por Semana:</span>
+          <span class="summary-value">{{ settingsForm.get('maxSessionsPerWeek')?.value }} sessões</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Dias de Trabalho:</span>
+          <span class="summary-value">{{ getSelectedWorkdaysLabel() }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Horário:</span>
+          <span class="summary-value">
+            {{ settingsForm.get('workDayStart')?.value }} às {{ settingsForm.get('workDayEnd')?.value }}
+          </span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Duração por Sessão:</span>
+          <span class="summary-value">{{ settingsForm.get('sessionDurationMinutes')?.value }} minutos</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Prazo de Cancelamento:</span>
+          <span class="summary-value">{{ settingsForm.get('cancellationDeadlineHours')?.value }} horas</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button 
+        type="button" 
+        class="btn btn-secondary"
+        (click)="onCancel()"
+        [disabled]="isSaving">
+        Cancelar
+      </button>
+      <button 
+        type="submit" 
+        class="btn btn-primary"
+        [disabled]="!settingsForm.valid || isSaving">
+        <span *ngIf="!isSaving">Salvar Configurações</span>
+        <span *ngIf="isSaving">Salvando...</span>
+      </button>
+    </div>
+  </form>
+
+  <!-- Helpful Information -->
+  <div class="info-section">
+    <h3>💡 Dicas</h3>
+    <ul class="tips-list">
+      <li>Defina um horário consistente para melhor organização</li>
+      <li>Reserve tempo entre sessões para anotações e planejamento</li>
+      <li>Quanto maior o prazo de cancelamento, menos desistências</li>
+      <li>Ajuste a capacidade semanal de acordo com sua disponibilidade</li>
+    </ul>
+  </div>
+</div>
