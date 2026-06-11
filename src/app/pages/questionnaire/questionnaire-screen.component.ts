@@ -7,6 +7,7 @@ import { QuestionnaireService } from '@app/services/questionnaire.service';
 import { AIAnalysisService, RecommendedProfessionalsResponse } from '@app/services/ai-analysis.service';
 import { QuestionnaireSessionService } from '@app/services/questionnaire-session.service';
 import { WhatsAppService } from '@app/services/whatsapp.service';
+import { LeadTrackingService } from '@app/services/lead-tracking.service';
 import { Questionnaire, Question, QuestionType } from '@app/models/questionnaire.model';
 import { catchError, finalize } from 'rxjs/operators';
 import { of, BehaviorSubject } from 'rxjs';
@@ -35,6 +36,9 @@ import { of, BehaviorSubject } from 'rxjs';
 
             <h1>Questionário de Triagem</h1>
             <p class="subtitle">Responda algumas perguntas para encontrar o profissional ideal</p>
+            <div class="ai-disclaimer">
+              Esta triagem utiliza IA apenas para apoio informativo e não substitui diagnóstico ou conduta clínica profissional.
+            </div>
 
             <form [formGroup]="questionnaireForm" *ngIf="questionnaire">
               <div *ngFor="let question of questionnaire.questions" class="question-group">
@@ -152,6 +156,10 @@ import { of, BehaviorSubject } from 'rxjs';
               <div class="urgency-badge" [style.backgroundColor]="getUrgencyColor(response.urgencyLevel)">
                 Urgência: {{ translateUrgency(response.urgencyLevel) }}
               </div>
+            </div>
+
+            <div class="ai-disclaimer warning">
+              As recomendações abaixo são geradas por IA para direcionamento inicial. A avaliação final deve ser feita por um profissional habilitado.
             </div>
 
             <div class="problem-summary">
@@ -432,6 +440,24 @@ import { of, BehaviorSubject } from 'rxjs';
       margin-top: 8px;
     }
 
+    .ai-disclaimer {
+      margin: 12px 0 20px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+      background: #e8f0fe;
+      color: #1d4ed8;
+      border-left: 4px solid #1d4ed8;
+    }
+
+    .ai-disclaimer.warning {
+      background: #fff8e1;
+      color: #8a5700;
+      border-left-color: #d97706;
+      margin-bottom: 20px;
+    }
+
     .form-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -642,6 +668,7 @@ export class QuestionnaireScreenComponent implements OnInit {
     private aiAnalysisService: AIAnalysisService,
     private questionnaireSessionService: QuestionnaireSessionService,
     private whatsAppService: WhatsAppService,
+    private leadTrackingService: LeadTrackingService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
@@ -844,6 +871,7 @@ export class QuestionnaireScreenComponent implements OnInit {
               patientDescription: description,
               aiAnalysisResult: response,
               questionnaireResponses: this.questionnaireForm.value,
+              questionnaireId: (response as any).questionnaireId,
               timestamp: new Date()
             });
             
@@ -860,8 +888,24 @@ export class QuestionnaireScreenComponent implements OnInit {
   }
 
   scheduleProfessional(professionalId: string): void {
+    const params = new URLSearchParams(window.location.search);
     const sessionData = this.questionnaireSessionService.getSessionData();
-    this.whatsAppService.openConsultationChat(sessionData);
+
+    this.leadTrackingService.createLead({
+      professionalId,
+      questionnaireId: sessionData?.questionnaireId,
+      utmSource: params.get('utm_source') || undefined,
+      utmMedium: params.get('utm_medium') || undefined,
+      utmCampaign: params.get('utm_campaign') || undefined,
+      referrerUrl: document.referrer || undefined,
+      userAgent: navigator.userAgent
+    }).pipe(
+      catchError(() => of(null))
+    ).subscribe(() => {
+      const latestSessionData = this.questionnaireSessionService.getSessionData();
+      this.whatsAppService.openConsultationChat(latestSessionData);
+    });
+
   }
 
   getUrgencyColor(urgency: string): string {

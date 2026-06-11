@@ -6,6 +6,7 @@ export interface QuestionnaireSessionData {
   patientDescription: string;
   aiAnalysisResult: RecommendedProfessionalsResponse;
   questionnaireResponses: any;
+  questionnaireId?: string;
   timestamp: Date;
 }
 

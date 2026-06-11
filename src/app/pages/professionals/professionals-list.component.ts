@@ -21,6 +21,9 @@ import { map, Observable, of } from 'rxjs';
       <div class="professionals-header">
         <h1>Profissionais Recomendados</h1>
         <p class="subtitle">Escolha o melhor profissional para você</p>
+        <div class="ai-disclaimer">
+          Recomendação assistida por IA para triagem inicial. Não substitui avaliação clínica individual.
+        </div>
         <app-secondary-button
           label="← Voltar"
           (onClick)="navigateBack()"
@@ -66,7 +69,7 @@ import { map, Observable, of } from 'rxjs';
                 (onClick)="viewDetails(professional.id)"
               ></app-primary-button>
               <app-secondary-button
-                label="Agendar Consulta"
+                label="Entrar em Contato"
                 (onClick)="scheduleConsultation(professional.id)"
               ></app-secondary-button>
             </div>
@@ -107,6 +110,16 @@ import { map, Observable, of } from 'rxjs';
         font-size: 18px;
         opacity: 0.9;
         margin-bottom: 24px;
+      }
+
+      .ai-disclaimer {
+        background: rgba(255, 255, 255, 0.2);
+        border-left: 4px solid #ffffff;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 13px;
+        margin-bottom: 18px;
+        line-height: 1.4;
       }
     }
 
@@ -320,7 +333,7 @@ export class ProfessionalsListComponent implements OnInit {
   }
 
   scheduleConsultation(professionalId: string): void {
-    this.router.navigate(['/schedule', professionalId]);
+    this.router.navigate(['/professional', professionalId]);
   }
 
   navigateBack(): void {

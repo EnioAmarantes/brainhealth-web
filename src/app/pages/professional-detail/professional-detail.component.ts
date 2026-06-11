@@ -5,6 +5,8 @@ import { CardComponent, PrimaryButtonComponent, SecondaryButtonComponent, Loadin
 import { ProfessionalService } from '@app/services/professional.service';
 import { AuthService } from '@app/services/auth.service';
 import { WhatsAppService, WhatsAppConsultationData } from '@app/services/whatsapp.service';
+import { LeadTrackingService } from '@app/services/lead-tracking.service';
+import { QuestionnaireSessionService } from '@app/services/questionnaire-session.service';
 import { Professional } from '@app/models/professional.model';
 import { Observable, combineLatest, map, catchError, of } from 'rxjs';
 
@@ -70,9 +72,12 @@ import { Observable, combineLatest, map, catchError, of } from 'rxjs';
             </div>
 
             <div class="actions">
+              <div class="ai-disclaimer">
+                O contato é uma aproximação inicial. A definição diagnóstica e terapêutica depende de consulta profissional.
+              </div>
               <app-primary-button
-                label="Agendar Consulta"
-                (onClick)="scheduleConsultation(data.professional.id)"
+                label="Falar no WhatsApp"
+                (onClick)="scheduleConsultation(data.professional)"
               ></app-primary-button>
             </div>
           </div>
@@ -186,12 +191,22 @@ import { Observable, combineLatest, map, catchError, of } from 'rxjs';
 
       .actions {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
         gap: 12px;
 
         @media (max-width: 480px) {
           grid-template-columns: 1fr;
         }
+      }
+
+      .ai-disclaimer {
+        background: #fff8e1;
+        color: #8a5700;
+        border-left: 4px solid #d97706;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 13px;
+        line-height: 1.4;
       }
     }
 
@@ -249,6 +264,8 @@ export class ProfessionalDetailComponent implements OnInit {
     private professionalService: ProfessionalService,
     private authService: AuthService,
     private whatsAppService: WhatsAppService,
+    private leadTrackingService: LeadTrackingService,
+    private questionnaireSessionService: QuestionnaireSessionService,
     private router: Router
   ) {}
 
@@ -279,24 +296,40 @@ export class ProfessionalDetailComponent implements OnInit {
     });
   }
 
-  scheduleConsultation(professionalId: string): void {
-    this.router.navigate(['/schedule', professionalId]);
+  scheduleConsultation(professional: Professional): void {
+    this.contactViaWhatsApp(professional);
   }
 
   contactViaWhatsApp(professional: Professional): void {
+    const params = new URLSearchParams(window.location.search);
+    const sessionData = this.questionnaireSessionService.getSessionData();
+
     // Obter dados necessários para o WhatsApp
     const whatsAppData: WhatsAppConsultationData = {
       professionalPhoneNumber: professional.phoneNumber || '',
       professionalName: professional.fullName,
-      patientDescription: 'Gostaria de marcar uma consulta',
-      aiAnalysisSynthesis: '',
-      identifiedIssues: [],
-      recommendedSpecialties: professional.specialties,
-      urgencyLevel: 'normal'
+      patientDescription: sessionData?.patientDescription || 'Gostaria de marcar uma consulta',
+      aiAnalysisSynthesis: sessionData?.aiAnalysisResult?.problemSynthesis || '',
+      identifiedIssues: sessionData?.aiAnalysisResult?.identifiedIssues || [],
+      recommendedSpecialties: sessionData?.aiAnalysisResult?.recommendedSpecialties || professional.specialties,
+      urgencyLevel: sessionData?.aiAnalysisResult?.urgencyLevel || 'normal'
     };
 
-    const whatsAppLink = this.whatsAppService.generateWhatsAppLink(whatsAppData);
-    window.open(whatsAppLink, '_blank');
+    this.leadTrackingService.createLead({
+      professionalId: professional.id,
+      questionnaireId: sessionData?.questionnaireId,
+      patientId: undefined,
+      utmSource: params.get('utm_source') || undefined,
+      utmMedium: params.get('utm_medium') || undefined,
+      utmCampaign: params.get('utm_campaign') || undefined,
+      referrerUrl: document.referrer || undefined,
+      userAgent: navigator.userAgent
+    }).pipe(
+      catchError(() => of(null))
+    ).subscribe(() => {
+      const whatsAppLink = this.whatsAppService.generateWhatsAppLink(whatsAppData);
+      window.open(whatsAppLink, '_blank');
+    });
   }
 
   goToLogin(): void {
