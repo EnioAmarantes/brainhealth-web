@@ -54,11 +54,6 @@ export const routes: Routes = [
         data: { title: 'Dashboard Profissional' }
       },
       {
-        path: 'professional/scheduling',
-        loadChildren: () => import('./pages/professional-dashboard/professional-scheduling.routes').then(m => m.PROFESSIONAL_SCHEDULING_ROUTES),
-        data: { title: 'Agendamento' }
-      },
-      {
         path: 'patient',
         loadComponent: () => import('./pages/patient-dashboard/patient-dashboard.component').then(m => m.PatientDashboardComponent),
         data: { title: 'Meu Dashboard' }
@@ -80,12 +75,6 @@ export const routes: Routes = [
     canActivate: [AuthGuard, ProfessionalGuard],
     loadComponent: () => import('./pages/professional-edit/professional-edit.component').then(m => m.ProfessionalEditComponent),
     data: { title: 'Editar Perfil' }
-  },
-  {
-    path: 'schedule/:professionalId',
-    canActivate: [AuthGuard],
-    loadComponent: () => import('./pages/schedule/schedule.component').then(m => m.ScheduleComponent),
-    data: { title: 'Agendar Consulta' }
   },
   {
     path: '**',

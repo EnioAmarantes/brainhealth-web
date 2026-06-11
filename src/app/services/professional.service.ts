@@ -142,8 +142,20 @@ export class ProfessionalService {
    * Usa o endpoint de perfil autenticado do backend
    */
   getCurrentProfessional(): Observable<Professional> {
-    return this.http.get<any>(`${this.apiUrl}/me/profile`).pipe(
-      map(data => ProfessionalMapper.mapFromBackend(data))
+    const url = `${this.apiUrl}/me/profile`;
+    console.log('[ProfessionalService] Chamando getCurrentProfessional:', url);
+    
+    return this.http.get<any>(url).pipe(
+      tap(data => {
+        console.log('[ProfessionalService] ✅ Resposta recebida:', data);
+      }),
+      map(data => {
+        console.log('[ProfessionalService] Mapeando dados do profissional');
+        return ProfessionalMapper.mapFromBackend(data);
+      }),
+      tap(mapped => {
+        console.log('[ProfessionalService] ✅ Profissional mapeado:', mapped?.id);
+      })
     );
   }
 

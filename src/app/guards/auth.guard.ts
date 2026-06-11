@@ -24,10 +24,17 @@ export class AuthGuard implements CanActivate {
         const currentUser = this.authService.getCurrentUser();
         const token = this.authService.getToken();
         
+        console.log('[AuthGuard] Verificando acesso a:', state.url);
+        console.log('[AuthGuard] isAuthenticated:', isAuthenticated);
+        console.log('[AuthGuard] currentUser:', currentUser?.email);
+        console.log('[AuthGuard] token existe:', !!token);
+        
         if (isAuthenticated || (currentUser && token)) {
+          console.log('[AuthGuard] ✅ Acesso permitido');
           return true;
         }
 
+        console.log('[AuthGuard] ❌ Acesso negado - redirecionando para login');
         // Redireciona para login se não autenticado
         this.router.navigate(['/']);
         return false;

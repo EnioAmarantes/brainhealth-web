@@ -356,19 +356,19 @@ export class ProfessionalDashboardComponent implements OnInit {
   }
 
   viewPatients(): void {
-    this.router.navigate(['/professional/patients']);
+    this.router.navigate(['/professionals']);
   }
 
   scheduleConsultation(): void {
-    this.router.navigate(['/professional/schedule']);
+    this.router.navigate(['/questionnaire']);
   }
 
   viewSchedule(): void {
-    this.router.navigate(['/professional/calendar']);
+    this.router.navigate(['/professional/edit/profile']);
   }
 
   openSettings(): void {
-    this.router.navigate(['/professional/settings']);
+    this.router.navigate(['/professional/edit/profile']);
   }
 
   toggleAvailability(professional: Professional): void {
@@ -391,6 +391,6 @@ export class ProfessionalDashboardComponent implements OnInit {
   }
 
   navigateToScheduling(): void {
-    this.router.navigate(['/dashboard/professional/scheduling']);
+    this.router.navigate(['/professional/edit/profile']);
   }
 }

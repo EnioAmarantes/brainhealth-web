@@ -14,19 +14,20 @@ import { LoadingIndicatorComponent } from '@app/components/shared';
     styles: [`
     :host {
       display: block;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      min-height: 100vh;
       margin: 0;
       padding: 0;
       border: 0;
       box-sizing: border-box;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
 
     .app-wrapper {
       display: block;
       width: 100%;
-      height: 100%;
+      min-height: 100vh;
       margin: 0;
       padding: 0;
       border: 0;
@@ -36,7 +37,7 @@ import { LoadingIndicatorComponent } from '@app/components/shared';
     ::ng-deep app-login-selector {
       display: block;
       width: 100%;
-      height: 100%;
+      min-height: 100vh;
     }
   `]
 })
