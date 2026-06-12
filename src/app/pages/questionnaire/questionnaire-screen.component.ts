@@ -49,14 +49,18 @@ import { of, BehaviorSubject } from 'rxjs';
                 </label>
 
                 <div [ngSwitch]="question.type">
-                  <!-- Multiple Choice -->
-                  <div *ngSwitchCase="QuestionType.MULTIPLE_CHOICE" class="options">
-                    <select [id]="question.id" [formControlName]="question.id" [attr.aria-label]="question.text">
-                      <option value="">Selecione uma opção</option>
-                      <option *ngFor="let option of question.options" [value]="option.value">
-                        {{ option.text }}
-                      </option>
-                    </select>
+                  <!-- Multiple Choice (single selection) -->
+                  <div *ngSwitchCase="QuestionType.MULTIPLE_CHOICE" class="single-choice-options">
+                    <label *ngFor="let option of question.options" class="single-choice-item" [for]="option.id">
+                      <input
+                        type="radio"
+                        [id]="option.id"
+                        [value]="option.value"
+                        [formControlName]="question.id"
+                        [attr.aria-label]="option.text"
+                      />
+                      <span>{{ option.text }}</span>
+                    </label>
                   </div>
 
                   <!-- Checkboxes -->
@@ -397,6 +401,33 @@ import { of, BehaviorSubject } from 'rxjs';
             font-weight: 400;
             cursor: pointer;
             flex: 1;
+          }
+        }
+      }
+
+      .single-choice-options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        .single-choice-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin: 0;
+          font-weight: 400;
+          cursor: pointer;
+
+          input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+          }
+
+          span {
+            flex: 1;
+            color: #333;
+            font-size: 14px;
           }
         }
       }
@@ -879,7 +910,10 @@ export class QuestionnaireScreenComponent implements OnInit {
     const questionnaire = this.questionnaire$.value;
     if (!questionnaire) return 0;
     const total = questionnaire.questions.length;
-    const answered = Object.values(this.questionnaireForm.value).filter(v => v).length;
+    const answered = questionnaire.questions
+      .map(q => this.questionnaireForm.get(q.id)?.value)
+      .filter(v => Array.isArray(v) ? v.length > 0 : !!v)
+      .length;
     return (answered / total) * 33;
   }
 
@@ -937,7 +971,9 @@ export class QuestionnaireScreenComponent implements OnInit {
 
       const description = this.freeTextForm.get('freeTextDescription')?.value;
       const rawAnswers = this.questionnaireForm.value;
-      const symptomsDuration = rawAnswers?.['q3'];
+      const symptomsDuration = Array.isArray(rawAnswers?.['q3'])
+        ? rawAnswers['q3'][0]
+        : rawAnswers?.['q3'];
       const normalizedAnswers = this.buildNormalizedAnswers(rawAnswers);
 
       if (!this.authService.isAuthenticated()) {
@@ -1039,6 +1075,22 @@ export class QuestionnaireScreenComponent implements OnInit {
   }
 
   private buildNormalizedAnswers(rawAnswers: Record<string, any>): Record<string, string> {
+    const firstValue = (value: any): string | undefined => {
+      if (Array.isArray(value)) {
+        return value.length > 0 ? String(value[0]) : undefined;
+      }
+
+      if (value === null || value === undefined || value === '') {
+        return undefined;
+      }
+
+      return String(value);
+    };
+
+    const q1Value = firstValue(rawAnswers?.['q1']);
+    const q3Value = firstValue(rawAnswers?.['q3']);
+    const q5Value = firstValue(rawAnswers?.['q5']);
+
     const q1Map: Record<string, number> = {
       very_well: 0,
       well: 1,
@@ -1065,11 +1117,11 @@ export class QuestionnaireScreenComponent implements OnInit {
     const q4Scale = Number(rawAnswers?.['q4'] || 1);
 
     const normalized: Record<string, number> = {
-      q1: q1Map[rawAnswers?.['q1']] ?? 1,
+      q1: q1Map[q1Value ?? ''] ?? 1,
       q2: Math.min(q2Selections, 3),
-      q3: q3Map[rawAnswers?.['q3']] ?? 1,
+      q3: q3Map[q3Value ?? ''] ?? 1,
       q4: Math.max(0, Math.min(3, q4Scale - 1)),
-      q5: q5Map[rawAnswers?.['q5']] ?? 1,
+      q5: q5Map[q5Value ?? ''] ?? 1,
       q6: 0,
       q7: 0,
       q8: 0,
