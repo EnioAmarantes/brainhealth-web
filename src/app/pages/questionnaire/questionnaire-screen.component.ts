@@ -8,6 +8,7 @@ import { AIAnalysisService, RecommendedProfessionalsResponse } from '@app/servic
 import { QuestionnaireSessionService } from '@app/services/questionnaire-session.service';
 import { WhatsAppService } from '@app/services/whatsapp.service';
 import { LeadTrackingService } from '@app/services/lead-tracking.service';
+import { AuthService } from '@app/services/auth.service';
 import { Questionnaire, Question, QuestionType } from '@app/models/questionnaire.model';
 import { catchError, finalize } from 'rxjs/operators';
 import { of, BehaviorSubject } from 'rxjs';
@@ -669,12 +670,13 @@ export class QuestionnaireScreenComponent implements OnInit {
     private questionnaireSessionService: QuestionnaireSessionService,
     private whatsAppService: WhatsAppService,
     private leadTrackingService: LeadTrackingService,
+    private authService: AuthService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    // Load questionnaire mock for testing (no backend dependency)
+    // Mantém estrutura de perguntas local para UX, mas persistindo triagem real no backend
     this.loadMockQuestionnaire();
   }
 
@@ -841,14 +843,75 @@ export class QuestionnaireScreenComponent implements OnInit {
       this.isAnalyzing = true;
       this.isAnalyzing$.next(true);
       this.cdr.markForCheck();
-      const description = this.freeTextForm.get('freeTextDescription')?.value;
-      
-      const request = {
-        patientDescription: description,
-        previousContext: JSON.stringify(this.questionnaireForm.value)
-      };
 
-      this.aiAnalysisService.analyzeAndRecommend(request)
+      const description = this.freeTextForm.get('freeTextDescription')?.value;
+      const rawAnswers = this.questionnaireForm.value;
+      const symptomsDuration = rawAnswers?.['q3'];
+      const normalizedAnswers = this.buildNormalizedAnswers(rawAnswers);
+
+      if (!this.authService.isAuthenticated()) {
+        this.aiAnalysisService.analyzeAndRecommend({
+          patientDescription: description,
+          previousContext: JSON.stringify({
+            answers: normalizedAnswers,
+            symptomsDuration
+          })
+        })
+          .pipe(
+            finalize(() => {
+              this.isAnalyzing = false;
+              this.isAnalyzing$.next(false);
+              this.cdr.markForCheck();
+            }),
+            catchError(error => {
+              console.error('Error analyzing anonymously with AI:', error);
+              return of(null);
+            })
+          )
+          .subscribe(response => {
+            if (!response) {
+              return;
+            }
+
+            this.recommendedProfessionals$.next(response);
+            this.recommendedProfessionals = response;
+            this.questionnaireSessionService.setSessionData({
+              patientDescription: description,
+              aiAnalysisResult: response,
+              questionnaireResponses: this.questionnaireForm.value,
+              questionnaireId: undefined,
+              timestamp: new Date()
+            });
+
+            this.currentStep$.next('results');
+            this.currentStep = 'results';
+            this.cdr.markForCheck();
+          });
+
+        return;
+      }
+
+      this.questionnaireService.submitAnswers({
+        type: 'PHQ-9',
+        answers: JSON.stringify(normalizedAnswers),
+        symptomsDuration,
+        freeTextDescription: description
+      })
+        .pipe(
+          catchError(error => {
+            console.error('Error submitting questionnaire:', error);
+            return of(null);
+          })
+        )
+        .subscribe(questionnaireResponse => {
+          if (!questionnaireResponse?.id) {
+            this.isAnalyzing = false;
+            this.isAnalyzing$.next(false);
+            this.cdr.markForCheck();
+            return;
+          }
+
+          this.aiAnalysisService.analyzeQuestionnaireWithRecommendations(questionnaireResponse.id)
         .pipe(
           finalize(() => {
             this.isAnalyzing = false;
@@ -871,7 +934,7 @@ export class QuestionnaireScreenComponent implements OnInit {
               patientDescription: description,
               aiAnalysisResult: response,
               questionnaireResponses: this.questionnaireForm.value,
-              questionnaireId: (response as any).questionnaireId,
+              questionnaireId: questionnaireResponse.id,
               timestamp: new Date()
             });
             
@@ -880,7 +943,49 @@ export class QuestionnaireScreenComponent implements OnInit {
             this.cdr.markForCheck();
           }
         });
+        });
     }
+  }
+
+  private buildNormalizedAnswers(rawAnswers: Record<string, any>): Record<string, string> {
+    const q1Map: Record<string, number> = {
+      very_well: 0,
+      well: 1,
+      normal: 2,
+      bad: 3,
+      very_bad: 3
+    };
+
+    const q3Map: Record<string, number> = {
+      less_1_month: 0,
+      '1_to_3_months': 1,
+      '4_to_6_months': 2,
+      about_1_year: 3,
+      more_1_year: 3
+    };
+
+    const q5Map: Record<string, number> = {
+      yes_current: 0,
+      yes_past: 1,
+      no: 2
+    };
+
+    const q2Selections = Array.isArray(rawAnswers?.['q2']) ? rawAnswers['q2'].length : 0;
+    const q4Scale = Number(rawAnswers?.['q4'] || 1);
+
+    const normalized: Record<string, number> = {
+      q1: q1Map[rawAnswers?.['q1']] ?? 1,
+      q2: Math.min(q2Selections, 3),
+      q3: q3Map[rawAnswers?.['q3']] ?? 1,
+      q4: Math.max(0, Math.min(3, q4Scale - 1)),
+      q5: q5Map[rawAnswers?.['q5']] ?? 1,
+      q6: 0,
+      q7: 0,
+      q8: 0,
+      q9: 0
+    };
+
+    return Object.fromEntries(Object.entries(normalized).map(([key, value]) => [key, String(value)]));
   }
 
   viewProfessional(professionalId: string): void {

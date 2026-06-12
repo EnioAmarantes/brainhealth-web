@@ -1,12 +1,31 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { 
-  Questionnaire, 
-  QuestionnaireResponse, 
-  ScreeningResult 
-} from '@app/models/questionnaire.model';
+import { Questionnaire } from '@app/models/questionnaire.model';
 import { environment } from '@environments/environment';
+
+export interface SubmitQuestionnaireAnswerRequest {
+  type: string;
+  answers: string;
+  symptomsDuration?: string;
+  freeTextDescription?: string;
+}
+
+export interface QuestionnaireAnswerResponse {
+  id: string;
+  type: string;
+  title: string;
+  questions?: string;
+  answers?: string;
+  totalScore?: number;
+  result?: string;
+  recommendations?: string;
+  freeTextDescription?: string;
+  symptomsDuration?: string;
+  aiSynthesis?: string;
+  identifiedIssues?: string;
+  completedAt: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -24,12 +43,12 @@ export class QuestionnaireService {
   }
 
   /**
-   * Envia respostas do questionário e obtém resultado
+   * Envia respostas do questionário de triagem para persistência no backend
    */
-  submitQuestionnaire(response: QuestionnaireResponse): Observable<ScreeningResult> {
-    return this.http.post<ScreeningResult>(
-      `${this.apiUrl}/submit`,
-      response
+  submitAnswers(request: SubmitQuestionnaireAnswerRequest): Observable<QuestionnaireAnswerResponse> {
+    return this.http.post<QuestionnaireAnswerResponse>(
+      `${this.apiUrl}/answer`,
+      request
     );
   }
 
