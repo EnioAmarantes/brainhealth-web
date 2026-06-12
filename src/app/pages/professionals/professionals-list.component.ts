@@ -261,6 +261,74 @@ import { map, Observable, of } from 'rxjs';
       }
     }
 
+    @media (max-width: 768px) {
+      .professionals-container {
+        padding: 20px 12px;
+      }
+
+      .professionals-header {
+        margin-bottom: 24px;
+
+        h1 {
+          font-size: 28px;
+          line-height: 1.2;
+        }
+
+        .subtitle {
+          font-size: 15px;
+          margin-bottom: 16px;
+        }
+
+        .ai-disclaimer {
+          font-size: 12px;
+        }
+      }
+
+      .professionals-list {
+        gap: 14px;
+      }
+
+      .professional-card {
+        gap: 12px;
+
+        .professional-header .professional-info h3 {
+          font-size: 19px;
+        }
+
+        .professional-details .meta {
+          gap: 10px;
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .professional-location {
+          align-items: flex-start;
+          line-height: 1.5;
+        }
+      }
+    }
+
+    @media (max-width: 480px) {
+      .professionals-header h1 {
+        font-size: 24px;
+      }
+
+      .professional-card {
+        .professional-header {
+          gap: 12px;
+          padding-bottom: 12px;
+        }
+
+        .professional-details .description {
+          font-size: 13px;
+        }
+
+        .actions {
+          gap: 8px;
+        }
+      }
+    }
+
     @keyframes slideDown {
       from {
         opacity: 0;

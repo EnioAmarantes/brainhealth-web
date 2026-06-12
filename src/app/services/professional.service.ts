@@ -10,6 +10,29 @@ import {
 import { environment } from '@environments/environment';
 import { ProfessionalMapper } from '@app/mappers/professional.mapper';
 
+export interface AdminProfessionalModerationItem {
+  id: string;
+  userId: string;
+  fullName: string;
+  email: string;
+  registrationNumber: string;
+  specialties: string;
+  city: string;
+  state: string;
+  availableForNewPatients: boolean;
+  isApproved: boolean;
+  isVisible: boolean;
+  createdAt: string;
+  moderatedAtUtc?: string;
+  moderationNotes?: string;
+}
+
+export interface UpdateProfessionalModerationPayload {
+  isApproved?: boolean;
+  isVisible?: boolean;
+  moderationNotes?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -190,6 +213,36 @@ export class ProfessionalService {
       this.mapProfessionalToBackend(data)
     ).pipe(
       map(response => ProfessionalMapper.mapFromBackend(response))
+    );
+  }
+
+  /**
+   * Lista profissionais para moderação no painel admin
+   */
+  getModerationQueue(approved?: boolean, visible?: boolean): Observable<AdminProfessionalModerationItem[]> {
+    let params = new HttpParams();
+
+    if (approved !== undefined) {
+      params = params.set('approved', approved.toString());
+    }
+
+    if (visible !== undefined) {
+      params = params.set('visible', visible.toString());
+    }
+
+    return this.http.get<AdminProfessionalModerationItem[]>(`${this.apiUrl}/admin/moderation`, { params });
+  }
+
+  /**
+   * Atualiza status de aprovação/visibilidade de um profissional
+   */
+  updateProfessionalModeration(
+    professionalId: string,
+    payload: UpdateProfessionalModerationPayload
+  ): Observable<AdminProfessionalModerationItem> {
+    return this.http.patch<AdminProfessionalModerationItem>(
+      `${this.apiUrl}/${professionalId}/moderation`,
+      payload
     );
   }
 

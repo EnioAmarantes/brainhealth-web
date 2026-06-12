@@ -268,8 +268,8 @@ import { of, BehaviorSubject } from 'rxjs';
     .free-text-box,
     .results-box {
       width: 100%;
-      max-width: 100%;
-      padding: 60px;
+      max-width: 1120px;
+      padding: 52px 40px;
       animation: slideUp 0.6s ease-out;
       margin: 0;
       border: 0;
@@ -292,9 +292,9 @@ import { of, BehaviorSubject } from 'rxjs';
     .results-container {
       min-height: 100vh;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      padding: 0;
+      padding: 16px 0;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       overflow-y: auto;
       width: 100%;
@@ -485,11 +485,13 @@ import { of, BehaviorSubject } from 'rxjs';
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
       margin-bottom: 24px;
 
       h1 {
         margin: 0;
-        flex: 1;
+        flex: 1 1 260px;
       }
 
       .urgency-badge {
@@ -573,7 +575,7 @@ import { of, BehaviorSubject } from 'rxjs';
 
     .professionals-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
 
@@ -585,6 +587,7 @@ import { of, BehaviorSubject } from 'rxjs';
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
+          gap: 12px;
           margin-bottom: 16px;
 
           h3 {
@@ -634,6 +637,94 @@ import { of, BehaviorSubject } from 'rxjs';
           grid-template-columns: 1fr 1fr;
           gap: 8px;
         }
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .questionnaire-box,
+      .free-text-box,
+      .results-box {
+        max-width: 920px;
+        padding: 36px 24px;
+      }
+
+      .question-group,
+      .form-group {
+        margin-bottom: 24px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .questionnaire-container,
+      .results-container {
+        align-items: flex-start;
+        padding: 10px 0;
+      }
+
+      .questionnaire-box,
+      .free-text-box,
+      .results-box {
+        padding: 20px 14px;
+
+        h1 {
+          font-size: 24px;
+          line-height: 1.2;
+        }
+
+        .subtitle {
+          margin-bottom: 18px;
+        }
+      }
+
+      .ai-disclaimer {
+        font-size: 12px;
+      }
+
+      .problem-summary {
+        padding: 14px;
+      }
+
+      .professionals-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .professionals-grid .professional-card .professional-header {
+        flex-direction: column;
+      }
+
+      .professionals-grid .professional-card .professional-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .question-group,
+      .form-group {
+        margin-bottom: 20px;
+
+        label {
+          font-size: 15px;
+          margin-bottom: 10px;
+        }
+
+        select,
+        textarea {
+          font-size: 13px;
+          padding: 10px;
+        }
+      }
+
+      .question-group .scale .scale-options {
+        gap: 4px;
+      }
+
+      .question-group .scale .scale-options label span {
+        font-size: 11px;
+      }
+
+      .results-header .urgency-badge {
+        width: 100%;
+        text-align: center;
       }
     }
 
