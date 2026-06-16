@@ -243,6 +243,10 @@ import { of, BehaviorSubject } from 'rxjs';
                 (onClick)="goToProfessionals()"
               ></app-primary-button>
             </div>
+
+            <p class="contact-error" *ngIf="contactErrorMessage">
+              {{ contactErrorMessage }}
+            </p>
           </div>
         </app-card>
       </div>
@@ -510,6 +514,14 @@ import { of, BehaviorSubject } from 'rxjs';
       @media (max-width: 480px) {
         grid-template-columns: 1fr;
       }
+    }
+
+    .contact-error {
+      margin: 14px 0 0;
+      color: #c62828;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
     }
 
     .results-header {
@@ -784,6 +796,7 @@ export class QuestionnaireScreenComponent implements OnInit {
   isAnalyzing = false;
   QuestionType = QuestionType;
   characterCount = 0;
+  contactErrorMessage: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -1136,6 +1149,8 @@ export class QuestionnaireScreenComponent implements OnInit {
   }
 
   scheduleProfessional(professionalId: string): void {
+    this.contactErrorMessage = null;
+
     const params = new URLSearchParams(window.location.search);
     const sessionData = this.questionnaireSessionService.getSessionData();
 
@@ -1148,9 +1163,21 @@ export class QuestionnaireScreenComponent implements OnInit {
       referrerUrl: document.referrer || undefined,
       userAgent: navigator.userAgent
     }).pipe(
-      catchError(() => of(null))
-    ).subscribe(() => {
+      catchError(() => {
+        this.contactErrorMessage = 'Nao foi possivel registrar seu contato agora. Tente novamente em instantes.';
+        return of(null);
+      })
+    ).subscribe((leadCreated) => {
+      if (!leadCreated) {
+        return;
+      }
+
       const latestSessionData = this.questionnaireSessionService.getSessionData();
+      if (!latestSessionData) {
+        this.contactErrorMessage = 'Sessao da triagem nao encontrada para abrir o WhatsApp.';
+        return;
+      }
+
       this.whatsAppService.openConsultationChat(latestSessionData);
     });
 

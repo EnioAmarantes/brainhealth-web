@@ -1,10 +1,14 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { CardComponent, PrimaryButtonComponent, SecondaryButtonComponent, LoadingIndicatorComponent } from '@app/components/shared';
 import { ProfessionalService } from '@app/services/professional.service';
+import { LeadTrackingService } from '@app/services/lead-tracking.service';
+import { QuestionnaireSessionService } from '@app/services/questionnaire-session.service';
+import { WhatsAppService } from '@app/services/whatsapp.service';
 import { Professional, PaginatedResult } from '@app/models/professional.model';
-import { map, Observable, of } from 'rxjs';
+import { catchError, finalize, map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
 
 @Component({
     selector: 'app-professionals-list',
@@ -70,9 +74,14 @@ import { map, Observable, of } from 'rxjs';
               ></app-primary-button>
               <app-secondary-button
                 label="Entrar em Contato"
+                [disabled]="isProcessingContact(professional.id)"
                 (onClick)="scheduleConsultation(professional.id)"
               ></app-secondary-button>
             </div>
+
+            <p class="contact-error" *ngIf="contactErrorByProfessional[professional.id]">
+              {{ contactErrorByProfessional[professional.id] }}
+            </p>
           </div>
         </app-card>
 
@@ -259,6 +268,13 @@ import { map, Observable, of } from 'rxjs';
           grid-template-columns: 1fr;
         }
       }
+
+      .contact-error {
+        margin: 0;
+        font-size: 12px;
+        color: #c62828;
+        font-weight: 600;
+      }
     }
 
     @media (max-width: 768px) {
@@ -354,11 +370,17 @@ import { map, Observable, of } from 'rxjs';
 })
 export class ProfessionalsListComponent implements OnInit {
   professionals$!: Observable<PaginatedResult<Professional>>;
+  contactErrorByProfessional: Record<string, string> = {};
+  processingContactIds = new Set<string>();
 
   constructor(
     private professionalService: ProfessionalService,
+    private leadTrackingService: LeadTrackingService,
+    private questionnaireSessionService: QuestionnaireSessionService,
+    private whatsAppService: WhatsAppService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -400,8 +422,57 @@ export class ProfessionalsListComponent implements OnInit {
     this.router.navigate(['/professional', professionalId]);
   }
 
+  isProcessingContact(professionalId: string): boolean {
+    return this.processingContactIds.has(professionalId);
+  }
+
   scheduleConsultation(professionalId: string): void {
-    this.router.navigate(['/professional', professionalId]);
+    this.contactErrorByProfessional[professionalId] = '';
+    this.processingContactIds.add(professionalId);
+
+    const params = new URLSearchParams(window.location.search);
+    const sessionData = this.questionnaireSessionService.getSessionData();
+
+    this.leadTrackingService.createLead({
+      professionalId,
+      questionnaireId: sessionData?.questionnaireId,
+      utmSource: params.get('utm_source') || undefined,
+      utmMedium: params.get('utm_medium') || undefined,
+      utmCampaign: params.get('utm_campaign') || undefined,
+      referrerUrl: document.referrer || undefined,
+      userAgent: navigator.userAgent
+    }).pipe(
+      catchError(() => {
+        this.contactErrorByProfessional[professionalId] = 'Nao foi possivel registrar seu contato. Tente novamente.';
+        return of(null);
+      }),
+      finalize(() => {
+        this.processingContactIds.delete(professionalId);
+        this.cdr.markForCheck();
+      })
+    ).subscribe((leadCreated) => {
+      if (!leadCreated) {
+        return;
+      }
+
+      if (!sessionData) {
+        const fallbackLink = this.whatsAppService.generateWhatsAppLink({
+          professionalPhoneNumber: '',
+          professionalName: 'Profissional',
+          patientDescription: 'Contato iniciado na listagem de profissionais.',
+          aiAnalysisSynthesis: 'Paciente solicitou contato direto pela plataforma.',
+          identifiedIssues: ['Nao informado'],
+          recommendedSpecialties: ['Nao informado'],
+          urgencyLevel: 'low',
+          patientName: 'Paciente'
+        });
+
+        this.whatsAppService.openWhatsAppChat(fallbackLink);
+        return;
+      }
+
+      this.whatsAppService.openConsultationChat(sessionData);
+    });
   }
 
   navigateBack(): void {

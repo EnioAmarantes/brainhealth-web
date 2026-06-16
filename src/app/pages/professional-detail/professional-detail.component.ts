@@ -8,7 +8,7 @@ import { WhatsAppService, WhatsAppConsultationData } from '@app/services/whatsap
 import { LeadTrackingService } from '@app/services/lead-tracking.service';
 import { QuestionnaireSessionService } from '@app/services/questionnaire-session.service';
 import { Professional } from '@app/models/professional.model';
-import { Observable, combineLatest, map, catchError, of } from 'rxjs';
+import { Observable, combineLatest, map, catchError, finalize, of } from 'rxjs';
 
 @Component({
     selector: 'app-professional-detail',
@@ -77,8 +77,11 @@ import { Observable, combineLatest, map, catchError, of } from 'rxjs';
               </div>
               <app-primary-button
                 label="Falar no WhatsApp"
+                [disabled]="isProcessingContact"
+                [isLoading]="isProcessingContact"
                 (onClick)="scheduleConsultation(data.professional)"
               ></app-primary-button>
+              <p class="contact-error" *ngIf="contactErrorMessage">{{ contactErrorMessage }}</p>
             </div>
           </div>
         </app-card>
@@ -110,9 +113,11 @@ import { Observable, combineLatest, map, catchError, of } from 'rxjs';
               ></app-whatsapp-button>
               <app-secondary-button
                 label="Fazer Login"
+                [disabled]="isProcessingContact"
                 (onClick)="goToLogin()"
               ></app-secondary-button>
             </div>
+            <p class="contact-error" *ngIf="contactErrorMessage">{{ contactErrorMessage }}</p>
           </div>
         </app-card>
       </ng-container>
@@ -208,6 +213,13 @@ import { Observable, combineLatest, map, catchError, of } from 'rxjs';
         font-size: 13px;
         line-height: 1.4;
       }
+
+      .contact-error {
+        margin: 0;
+        color: #c62828;
+        font-size: 13px;
+        font-weight: 600;
+      }
     }
 
     .professional-summary {
@@ -258,6 +270,8 @@ import { Observable, combineLatest, map, catchError, of } from 'rxjs';
 export class ProfessionalDetailComponent implements OnInit {
   professional$!: Observable<Professional>;
   detailData$!: Observable<{ professional: Professional; isAuthenticated: boolean }>;
+  isProcessingContact = false;
+  contactErrorMessage: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -301,6 +315,13 @@ export class ProfessionalDetailComponent implements OnInit {
   }
 
   contactViaWhatsApp(professional: Professional): void {
+    if (this.isProcessingContact) {
+      return;
+    }
+
+    this.contactErrorMessage = null;
+    this.isProcessingContact = true;
+
     const params = new URLSearchParams(window.location.search);
     const sessionData = this.questionnaireSessionService.getSessionData();
 
@@ -325,8 +346,18 @@ export class ProfessionalDetailComponent implements OnInit {
       referrerUrl: document.referrer || undefined,
       userAgent: navigator.userAgent
     }).pipe(
-      catchError(() => of(null))
-    ).subscribe(() => {
+      catchError(() => {
+        this.contactErrorMessage = 'Nao foi possivel registrar seu contato. Tente novamente em instantes.';
+        return of(null);
+      }),
+      finalize(() => {
+        this.isProcessingContact = false;
+      })
+    ).subscribe((leadCreated) => {
+      if (!leadCreated) {
+        return;
+      }
+
       const whatsAppLink = this.whatsAppService.generateWhatsAppLink(whatsAppData);
       window.open(whatsAppLink, '_blank');
     });
