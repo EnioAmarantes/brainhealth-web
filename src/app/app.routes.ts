@@ -30,6 +30,21 @@ export const routes: Routes = [
     ]
   },
   {
+    path: 'signup',
+    children: [
+      {
+        path: 'professional',
+        redirectTo: '/login/professional',
+        pathMatch: 'full'
+      },
+      {
+        path: 'patient',
+        redirectTo: '/login/patient',
+        pathMatch: 'full'
+      }
+    ]
+  },
+  {
     path: 'questionnaire',
     component: QuestionnaireScreenComponent,
     data: { title: 'Questionário de Triagem' }

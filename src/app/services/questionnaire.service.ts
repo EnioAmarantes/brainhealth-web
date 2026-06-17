@@ -53,6 +53,16 @@ export class QuestionnaireService {
   }
 
   /**
+   * Envia respostas do questionário anonimamente (sem autenticação)
+   */
+  submitAnswersAnonymously(request: SubmitQuestionnaireAnswerRequest): Observable<QuestionnaireAnswerResponse> {
+    return this.http.post<QuestionnaireAnswerResponse>(
+      `${this.apiUrl}/answer-anonymous`,
+      request
+    );
+  }
+
+  /**
    * Obtém todos os questionários disponíveis
    */
   getQuestionnaires(): Observable<Questionnaire[]> {

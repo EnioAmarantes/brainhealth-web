@@ -41,6 +41,10 @@ import { of, BehaviorSubject } from 'rxjs';
               Esta triagem utiliza IA apenas para apoio informativo e não substitui diagnóstico ou conduta clínica profissional.
             </div>
 
+            <div class="data-collection-notice">
+              <strong>ℹ️ Aviso Importante:</strong> As informações que você fornecer neste questionário serão coletadas e analisadas para fornecer recomendações de profissionais especializados. Seus dados serão tratados de forma confidencial e em conformidade com a legislação de proteção de dados.
+            </div>
+
             <form [formGroup]="questionnaireForm" *ngIf="questionnaire">
               <div *ngFor="let question of questionnaire.questions" class="question-group">
                 <label [for]="question.id">
@@ -127,6 +131,24 @@ import { of, BehaviorSubject } from 'rxjs';
                 </div>
               </div>
 
+              <!-- Consent Checkbox -->
+              <div class="form-group consent-section">
+                <div class="consent-checkbox">
+                  <input
+                    type="checkbox"
+                    id="dataConsentCheckbox"
+                    formControlName="consentToDataCollection"
+                    [disabled]="isAnalyzing"
+                  />
+                  <label for="dataConsentCheckbox">
+                    Declaro que li e concordo com a coleta e processamento dos meus dados conforme descrito acima.
+                  </label>
+                </div>
+                <div class="error-message" *ngIf="questionnaireForm.get('consentToDataCollection')?.hasError('required') && questionnaireForm.get('consentToDataCollection')?.touched">
+                  Você precisa consentir com a coleta de dados para continuar.
+                </div>
+              </div>
+
               <div class="form-actions">
                 <app-secondary-button
                   label="Cancelar"
@@ -134,7 +156,7 @@ import { of, BehaviorSubject } from 'rxjs';
                 ></app-secondary-button>
                 <app-primary-button
                   label="Analisar com IA"
-                  [disabled]="questionnaireForm.invalid || freeTextForm.invalid || isAnalyzing"
+                  [disabled]="questionnaireForm.invalid || freeTextForm.invalid || isAnalyzing || !questionnaireForm.get('consentToDataCollection')?.value"
                   [isLoading]="isAnalyzing"
                   (onClick)="onSubmitFreeText()"
                 ></app-primary-button>
@@ -492,6 +514,64 @@ import { of, BehaviorSubject } from 'rxjs';
       color: #8a5700;
       border-left-color: #d97706;
       margin-bottom: 20px;
+    }
+
+    .data-collection-notice {
+      margin: 12px 0 24px;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.6;
+      background: #f0f4ff;
+      color: #2c3e50;
+      border-left: 4px solid #667eea;
+      border: 1px solid #e0e7ff;
+
+      strong {
+        color: #667eea;
+        font-weight: 600;
+        display: block;
+        margin-bottom: 8px;
+      }
+    }
+
+    .consent-section {
+      background: #fafbff;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid #e0e7ff;
+      margin-top: 28px;
+      margin-bottom: 24px;
+
+      .consent-checkbox {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin: 0;
+
+        input[type="checkbox"] {
+          width: 20px;
+          height: 20px;
+          margin-top: 2px;
+          cursor: pointer;
+          flex-shrink: 0;
+        }
+
+        label {
+          margin: 0;
+          font-weight: 400;
+          cursor: pointer;
+          color: #333;
+          font-size: 13px;
+          line-height: 1.5;
+          flex: 1;
+        }
+      }
+
+      .error-message {
+        margin-top: 8px;
+        margin-left: 30px;
+      }
     }
 
     .form-actions {
@@ -910,6 +990,8 @@ export class QuestionnaireScreenComponent implements OnInit {
     });
     // Add free text description to the main form
     formControls['freeTextDescription'] = ['', [Validators.required, Validators.minLength(10), Validators.maxLength(500)]];
+    // Add consent checkbox
+    formControls['consentToDataCollection'] = [false, Validators.requiredTrue];
     this.questionnaireForm = this.fb.group(formControls);
     // Sync freeTextForm to reference the same control
     this.freeTextForm = this.questionnaireForm;
@@ -990,47 +1072,68 @@ export class QuestionnaireScreenComponent implements OnInit {
       const normalizedAnswers = this.buildNormalizedAnswers(rawAnswers);
 
       if (!this.authService.isAuthenticated()) {
-        this.aiAnalysisService.analyzeAndRecommend({
-          patientDescription: description,
-          previousContext: JSON.stringify({
-            answers: normalizedAnswers,
-            symptomsDuration
-          })
+        // Para usuários anônimos: salvar questionário primeiro, depois analisar
+        this.questionnaireService.submitAnswersAnonymously({
+          type: 'PHQ-9',
+          answers: JSON.stringify(normalizedAnswers),
+          symptomsDuration,
+          freeTextDescription: description
         })
           .pipe(
-            finalize(() => {
+            catchError(error => {
+              console.error('Error submitting anonymous questionnaire:', error);
               this.isAnalyzing = false;
               this.isAnalyzing$.next(false);
               this.cdr.markForCheck();
-            }),
-            catchError(error => {
-              console.error('Error analyzing anonymously with AI:', error);
               return of(null);
             })
           )
-          .subscribe(response => {
-            if (!response) {
+          .subscribe(questionnaireResponse => {
+            if (!questionnaireResponse?.id) {
+              this.isAnalyzing = false;
+              this.isAnalyzing$.next(false);
+              this.cdr.markForCheck();
               return;
             }
 
-            this.recommendedProfessionals$.next(response);
-            this.recommendedProfessionals = response;
-            this.questionnaireSessionService.setSessionData({
-              patientDescription: description,
-              aiAnalysisResult: response,
-              questionnaireResponses: this.questionnaireForm.value,
-              questionnaireId: undefined,
-              timestamp: new Date()
-            });
-
-            this.currentStep$.next('results');
-            this.currentStep = 'results';
-            this.cdr.markForCheck();
+            // Agora analisar com IA usando o questionário salvo
+            this.aiAnalysisService.analyzeQuestionnaireWithRecommendations(questionnaireResponse.id)
+              .pipe(
+                finalize(() => {
+                  this.isAnalyzing = false;
+                  this.isAnalyzing$.next(false);
+                  this.cdr.markForCheck();
+                }),
+                catchError(error => {
+                  console.error('Error analyzing with AI:', error);
+                  return of(null);
+                })
+              )
+              .subscribe(response => {
+                if (response) {
+                  this.recommendedProfessionals$.next(response);
+                  this.recommendedProfessionals = response;
+                  
+                  // Armazenar dados na sessão para uso posterior (ex: envio de WhatsApp)
+                  this.questionnaireSessionService.setSessionData({
+                    patientDescription: description,
+                    aiAnalysisResult: response,
+                    questionnaireResponses: this.questionnaireForm.value,
+                    questionnaireId: questionnaireResponse.id, // ID DO QUESTIONÁRIO ANÔNIMO SALVO
+                    timestamp: new Date()
+                  });
+                  
+                  this.currentStep$.next('results');
+                  this.currentStep = 'results';
+                  this.cdr.markForCheck();
+                }
+              });
           });
 
         return;
       }
 
+      // Para usuários autenticados: fluxo original
       this.questionnaireService.submitAnswers({
         type: 'PHQ-9',
         answers: JSON.stringify(normalizedAnswers),

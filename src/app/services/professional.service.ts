@@ -33,6 +33,14 @@ export interface UpdateProfessionalModerationPayload {
   moderationNotes?: string;
 }
 
+interface BackendPagedResponse<T> {
+  data: T[];
+  currentPage: number;
+  pageSize: number;
+  totalRecords: number;
+  totalPages: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -91,16 +99,22 @@ export class ProfessionalService {
    * Obtém profissionais recomendados baseado em triagem
    */
   getRecommendedProfessionals(specialties: string[]): Observable<Professional[]> {
-    let params = new HttpParams();
-    specialties.forEach(specialty => {
-      params = params.append('specialties', specialty);
-    });
+    const primarySpecialty = specialties.find(s => !!s?.trim())?.trim();
+    if (!primarySpecialty) {
+      return new Observable<Professional[]>(subscriber => {
+        subscriber.next([]);
+        subscriber.complete();
+      });
+    }
 
-    return this.http.get<any[]>(
-      `${this.apiUrl}/recommended`,
-      { params }
-    ).pipe(
-      map(data => data.map(item => ProfessionalMapper.mapFromBackend(item)))
+    let params = new HttpParams()
+      .set('page', '1')
+      .set('pageSize', '20')
+      .set('specialty', primarySpecialty)
+      .set('availableOnly', 'true');
+
+    return this.http.get<BackendPagedResponse<any>>(`${this.apiUrl}/search`, { params }).pipe(
+      map(result => (result.data ?? []).map(item => ProfessionalMapper.mapFromBackend(item)))
     );
   }
 
@@ -108,7 +122,22 @@ export class ProfessionalService {
    * Obtém lista de especialidades disponíveis
    */
   getSpecialties(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.apiUrl}/specialties`);
+    const params = new HttpParams()
+      .set('page', '1')
+      .set('pageSize', '200');
+
+    return this.http.get<BackendPagedResponse<any>>(`${this.apiUrl}/search`, { params }).pipe(
+      map(result => result.data ?? []),
+      map(items => items
+        .flatMap(item => (item.specialties ?? '')
+          .toString()
+          .split(',')
+          .map((s: string) => s.trim())
+        )
+        .filter((s: string) => !!s)
+      ),
+      map(items => Array.from(new Set(items)).sort((a, b) => a.localeCompare(b)))
+    );
   }
 
   /**
@@ -124,13 +153,11 @@ export class ProfessionalService {
       .set('pageSize', '10');
 
     if (query) {
-      params = params.set('query', query);
+      params = params.set('searchTerm', query);
     }
 
     if (filters.specialties && filters.specialties.length > 0) {
-      filters.specialties.forEach(specialty => {
-        params = params.append('specialties', specialty);
-      });
+      params = params.set('specialty', filters.specialties[0]);
     }
 
     if (filters.maxPrice) {
@@ -142,20 +169,23 @@ export class ProfessionalService {
     }
 
     if (filters.city) {
-      params = params.set('city', filters.city);
+      params = params.set('location', filters.city);
     }
 
     if (filters.availability !== undefined) {
-      params = params.set('availability', filters.availability.toString());
+      params = params.set('availableOnly', filters.availability.toString());
     }
 
-    return this.http.get<PaginatedResult<any>>(
-      this.apiUrl,
+    return this.http.get<BackendPagedResponse<any>>(
+      `${this.apiUrl}/search`,
       { params }
     ).pipe(
       map(result => ({
-        ...result,
-        items: result.items.map(item => ProfessionalMapper.mapFromBackend(item))
+        items: (result.data ?? []).map(item => ProfessionalMapper.mapFromBackend(item)),
+        total: result.totalRecords ?? 0,
+        page: result.currentPage ?? page,
+        pageSize: result.pageSize ?? 10,
+        totalPages: result.totalPages ?? 0
       }))
     );
   }

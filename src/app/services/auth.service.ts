@@ -85,7 +85,7 @@ export class AuthService {
    */
   registerPatient(userData: any): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(
-      `${this.apiUrl}/register/patient`,
+      `${this.apiUrl}/register-patient`,
       userData
     ).pipe(
       tap(response => this.handleLoginSuccess(response)),
@@ -101,7 +101,7 @@ export class AuthService {
    */
   registerProfessional(userData: any): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(
-      `${this.apiUrl}/register/professional`,
+      `${this.apiUrl}/register-professional`,
       userData
     ).pipe(
       tap(response => this.handleLoginSuccess(response)),
@@ -122,7 +122,7 @@ export class AuthService {
     }
 
     return this.http.post<LoginResponse>(
-      `${this.apiUrl}/refresh-token`,
+      `${this.apiUrl}/refresh`,
       { refreshToken }
     ).pipe(
       tap(response => this.handleLoginSuccess(response)),
