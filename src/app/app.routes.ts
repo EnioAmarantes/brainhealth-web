@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from '@app/guards/auth.guard';
 import { ProfessionalGuard } from '@app/guards/professional.guard';
+import { LandingPageComponent } from '@app/pages/landing/landing-page.component';
 
 import { LoginSelectorComponent } from '@app/pages/login-selector/login-selector.component';
 import { ProfessionalLoginComponent } from '@app/pages/login/professional-login.component';
@@ -11,6 +12,11 @@ import { ProfessionalsListComponent } from '@app/pages/professionals/professiona
 export const routes: Routes = [
   {
     path: '',
+    component: LandingPageComponent,
+    data: { title: 'Brain Health - Triagem Inteligente' }
+  },
+  {
+    path: 'acesso',
     component: LoginSelectorComponent,
     data: { title: 'Brain Health - Login' }
   },

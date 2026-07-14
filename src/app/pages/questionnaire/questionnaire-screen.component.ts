@@ -1,10 +1,10 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CardComponent, PrimaryButtonComponent, SecondaryButtonComponent, LoadingIndicatorComponent, WhatsAppButtonComponent } from '@app/components/shared';
 import { QuestionnaireService } from '@app/services/questionnaire.service';
-import { AIAnalysisService, RecommendedProfessionalsResponse } from '@app/services/ai-analysis.service';
+import { AIAnalysisMetadata, AIAnalysisService, RecommendedProfessionalsResponse } from '@app/services/ai-analysis.service';
 import { QuestionnaireSessionService } from '@app/services/questionnaire-session.service';
 import { WhatsAppService } from '@app/services/whatsapp.service';
 import { LeadTrackingService } from '@app/services/lead-tracking.service';
@@ -163,7 +163,25 @@ import { of, BehaviorSubject } from 'rxjs';
               </div>
             </form>
 
-            <app-loading-indicator *ngIf="isAnalyzing"></app-loading-indicator>
+            <div class="analysis-progress-panel" *ngIf="isAnalyzing">
+              <app-loading-indicator></app-loading-indicator>
+
+              <h3>Processando sua triagem com IA</h3>
+              <ul class="analysis-steps">
+                <li
+                  *ngFor="let step of analysisProcessSteps; let i = index"
+                  [class.active]="i === analysisStepIndex"
+                  [class.done]="i < analysisStepIndex"
+                >
+                  <span class="step-dot"></span>
+                  <span>{{ step }}</span>
+                </li>
+              </ul>
+
+              <p class="fallback-notice" *ngIf="analysisFallbackNotice">
+                {{ analysisFallbackNotice }}
+              </p>
+            </div>
           </app-card>
         </div>
       </div>
@@ -188,6 +206,14 @@ import { of, BehaviorSubject } from 'rxjs';
             <div class="ai-disclaimer warning">
               As recomendações abaixo são geradas por IA para direcionamento inicial. A avaliação final deve ser feita por um profissional habilitado.
             </div>
+
+            <div class="fallback-notice result" *ngIf="analysisFallbackNotice">
+              {{ analysisFallbackNotice }}
+            </div>
+
+            <p class="analysis-provider" *ngIf="analysisProviderLabel">
+              {{ analysisProviderLabel }}
+            </p>
 
             <div class="problem-summary">
               <h2>Síntese do Problema</h2>
@@ -514,6 +540,83 @@ import { of, BehaviorSubject } from 'rxjs';
       color: #8a5700;
       border-left-color: #d97706;
       margin-bottom: 20px;
+    }
+
+    .analysis-progress-panel {
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid #d9e3ff;
+      background: #f8faff;
+
+      h3 {
+        margin: 0 0 12px;
+        font-size: 15px;
+        color: #1e3a8a;
+      }
+
+      .analysis-steps {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 8px;
+
+        li {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          color: #5c6684;
+          font-size: 13px;
+
+          .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #c9d4f5;
+          }
+
+          &.active {
+            color: #1e3a8a;
+            font-weight: 700;
+
+            .step-dot {
+              background: #4f46e5;
+              box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+            }
+          }
+
+          &.done {
+            color: #245a2b;
+
+            .step-dot {
+              background: #22c55e;
+            }
+          }
+        }
+      }
+    }
+
+    .fallback-notice {
+      margin: 10px 0 0;
+      padding: 10px;
+      border-radius: 8px;
+      background: #fff4e5;
+      border: 1px solid #f7c991;
+      color: #8a4b00;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .fallback-notice.result {
+      margin: -6px 0 14px;
+    }
+
+    .analysis-provider {
+      margin: 0 0 16px;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 600;
     }
 
     .data-collection-notice {
@@ -863,7 +966,7 @@ import { of, BehaviorSubject } from 'rxjs';
     }
   `]
 })
-export class QuestionnaireScreenComponent implements OnInit {
+export class QuestionnaireScreenComponent implements OnInit, OnDestroy {
   questionnaireForm!: FormGroup;
   freeTextForm!: FormGroup;
   questionnaire$ = new BehaviorSubject<Questionnaire | null>(null);
@@ -877,6 +980,17 @@ export class QuestionnaireScreenComponent implements OnInit {
   QuestionType = QuestionType;
   characterCount = 0;
   contactErrorMessage: string | null = null;
+  analysisStepIndex = -1;
+  analysisProgressIntervalId: ReturnType<typeof setInterval> | null = null;
+  analysisFallbackNotice: string | null = null;
+  analysisProviderLabel: string | null = null;
+  readonly analysisProcessSteps: string[] = [
+    'Lendo o texto',
+    'Interpretando o problema',
+    'Conectando com provedor de IA',
+    'Aguardando análise de IA',
+    'Direcionando profissionais'
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -893,6 +1007,10 @@ export class QuestionnaireScreenComponent implements OnInit {
   ngOnInit(): void {
     // Mantém estrutura de perguntas local para UX, mas persistindo triagem real no backend
     this.loadMockQuestionnaire();
+  }
+
+  ngOnDestroy(): void {
+    this.stopAnalysisProgress();
   }
 
   private loadMockQuestionnaire(): void {
@@ -1062,6 +1180,9 @@ export class QuestionnaireScreenComponent implements OnInit {
     if (this.freeTextForm.valid && !this.isAnalyzing) {
       this.isAnalyzing = true;
       this.isAnalyzing$.next(true);
+      this.analysisFallbackNotice = null;
+      this.analysisProviderLabel = null;
+      this.startAnalysisProgress();
       this.cdr.markForCheck();
 
       const description = this.freeTextForm.get('freeTextDescription')?.value;
@@ -1097,37 +1218,7 @@ export class QuestionnaireScreenComponent implements OnInit {
             }
 
             // Agora analisar com IA usando o questionário salvo
-            this.aiAnalysisService.analyzeQuestionnaireWithRecommendations(questionnaireResponse.id)
-              .pipe(
-                finalize(() => {
-                  this.isAnalyzing = false;
-                  this.isAnalyzing$.next(false);
-                  this.cdr.markForCheck();
-                }),
-                catchError(error => {
-                  console.error('Error analyzing with AI:', error);
-                  return of(null);
-                })
-              )
-              .subscribe(response => {
-                if (response) {
-                  this.recommendedProfessionals$.next(response);
-                  this.recommendedProfessionals = response;
-                  
-                  // Armazenar dados na sessão para uso posterior (ex: envio de WhatsApp)
-                  this.questionnaireSessionService.setSessionData({
-                    patientDescription: description,
-                    aiAnalysisResult: response,
-                    questionnaireResponses: this.questionnaireForm.value,
-                    questionnaireId: questionnaireResponse.id, // ID DO QUESTIONÁRIO ANÔNIMO SALVO
-                    timestamp: new Date()
-                  });
-                  
-                  this.currentStep$.next('results');
-                  this.currentStep = 'results';
-                  this.cdr.markForCheck();
-                }
-              });
+            this.runRecommendationAnalysis(questionnaireResponse.id, description);
           });
 
         return;
@@ -1154,39 +1245,84 @@ export class QuestionnaireScreenComponent implements OnInit {
             return;
           }
 
-          this.aiAnalysisService.analyzeQuestionnaireWithRecommendations(questionnaireResponse.id)
-        .pipe(
-          finalize(() => {
-            this.isAnalyzing = false;
-            this.isAnalyzing$.next(false);
-            this.cdr.markForCheck();
-          }),
-          catchError(error => {
-            console.error('Error analyzing with AI:', error);
-            return of(null);
-          })
-        )
-        .subscribe(response => {
-          if (response) {
-            this.recommendedProfessionals$.next(response);
-            this.recommendedProfessionals = response;
-            
-            // Armazenar dados na sessão para uso posterior (ex: envio de WhatsApp)
-            const description = this.freeTextForm.get('freeTextDescription')?.value;
-            this.questionnaireSessionService.setSessionData({
-              patientDescription: description,
-              aiAnalysisResult: response,
-              questionnaireResponses: this.questionnaireForm.value,
-              questionnaireId: questionnaireResponse.id,
-              timestamp: new Date()
-            });
-            
-            this.currentStep$.next('results');
-            this.currentStep = 'results';
-            this.cdr.markForCheck();
-          }
+          this.runRecommendationAnalysis(questionnaireResponse.id, description);
         });
+    }
+  }
+
+  private runRecommendationAnalysis(questionnaireId: string, description: string): void {
+    this.aiAnalysisService.analyzeQuestionnaireWithRecommendations(questionnaireId)
+      .pipe(
+        finalize(() => {
+          this.stopAnalysisProgress();
+          this.isAnalyzing = false;
+          this.isAnalyzing$.next(false);
+          this.cdr.markForCheck();
+        }),
+        catchError(error => {
+          console.error('Error analyzing with AI:', error);
+          this.analysisFallbackNotice = 'Nao foi possivel concluir a analise no provedor de IA. Tente novamente em instantes.';
+          return of(null);
+        })
+      )
+      .subscribe(response => {
+        if (!response) {
+          return;
+        }
+
+        this.analysisStepIndex = this.analysisProcessSteps.length - 1;
+        this.applyAnalysisMetadata(response.analysisMetadata);
+        this.recommendedProfessionals$.next(response);
+        this.recommendedProfessionals = response;
+
+        // Armazenar dados na sessão para uso posterior (ex: envio de WhatsApp)
+        this.questionnaireSessionService.setSessionData({
+          patientDescription: description,
+          aiAnalysisResult: response,
+          questionnaireResponses: this.questionnaireForm.value,
+          questionnaireId,
+          timestamp: new Date()
         });
+
+        this.currentStep$.next('results');
+        this.currentStep = 'results';
+        this.cdr.markForCheck();
+      });
+  }
+
+  private startAnalysisProgress(): void {
+    this.stopAnalysisProgress();
+    this.analysisStepIndex = 0;
+
+    this.analysisProgressIntervalId = setInterval(() => {
+      if (this.analysisStepIndex < 3) {
+        this.analysisStepIndex += 1;
+        this.cdr.markForCheck();
+      }
+    }, 900);
+  }
+
+  private stopAnalysisProgress(): void {
+    if (this.analysisProgressIntervalId !== null) {
+      clearInterval(this.analysisProgressIntervalId);
+      this.analysisProgressIntervalId = null;
+    }
+  }
+
+  private applyAnalysisMetadata(metadata?: AIAnalysisMetadata): void {
+    if (!metadata) {
+      this.analysisProviderLabel = null;
+      return;
+    }
+
+    const method = metadata.analysisMethod?.trim() || 'nao_informado';
+    const provider = metadata.provider?.trim() || 'nao_informado';
+    const model = metadata.model?.trim() || 'nao_informado';
+
+    this.analysisProviderLabel = `Analise realizada via ${method} | provedor: ${provider} | modelo: ${model}`;
+
+    if (metadata.usedFallback) {
+      this.analysisFallbackNotice = 'Nao foi possivel conectar com o provedor de IA. A analise foi concluida via fallback para manter o direcionamento de profissionais.';
     }
   }
 
@@ -1264,7 +1400,11 @@ export class QuestionnaireScreenComponent implements OnInit {
       utmMedium: params.get('utm_medium') || undefined,
       utmCampaign: params.get('utm_campaign') || undefined,
       referrerUrl: document.referrer || undefined,
-      userAgent: navigator.userAgent
+      userAgent: navigator.userAgent,
+      clientContextJson: JSON.stringify({
+        analysisMetadata: sessionData?.aiAnalysisResult?.analysisMetadata ?? null,
+        capturedAtUtc: new Date().toISOString()
+      })
     }).pipe(
       catchError(() => {
         this.contactErrorMessage = 'Nao foi possivel registrar seu contato agora. Tente novamente em instantes.';

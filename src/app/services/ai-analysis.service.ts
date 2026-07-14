@@ -14,6 +14,16 @@ export interface AIAnalysisResponse {
   recommendedSpecialties: string[];
   urgencyLevel: 'Low' | 'Medium' | 'High' | 'Critical';
   generalRecommendations?: string;
+  analysisMetadata?: AIAnalysisMetadata;
+}
+
+export interface AIAnalysisMetadata {
+  analysisMethod: string;
+  provider?: string;
+  model?: string;
+  usedFallback: boolean;
+  fallbackReason?: string;
+  analyzedAtUtc?: string;
 }
 
 export interface RecommendedProfessional {
@@ -39,6 +49,7 @@ export interface RecommendedProfessionalsResponse {
   recommendedProfessionals: RecommendedProfessional[];
   totalAvailable: number;
   generalRecommendations?: string;
+  analysisMetadata?: AIAnalysisMetadata;
 }
 
 export interface SearchProfessionalsByAIRequest {
