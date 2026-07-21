@@ -1,13 +1,11 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { LoadingIndicatorComponent } from '@app/components/shared';
 
 @Component({
     selector: 'app-root',
-    imports: [RouterOutlet, LoadingIndicatorComponent],
+    imports: [RouterOutlet],
     template: `
     <div class="app-wrapper">
-      <app-loading-indicator></app-loading-indicator>
       <router-outlet></router-outlet>
     </div>
   `,

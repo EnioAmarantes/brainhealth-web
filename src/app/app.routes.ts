@@ -1,101 +1,11 @@
 import { Routes } from '@angular/router';
-import { AuthGuard } from '@app/guards/auth.guard';
-import { ProfessionalGuard } from '@app/guards/professional.guard';
-import { LandingPageComponent } from '@app/pages/landing/landing-page.component';
-
-import { LoginSelectorComponent } from '@app/pages/login-selector/login-selector.component';
-import { ProfessionalLoginComponent } from '@app/pages/login/professional-login.component';
-import { PatientLoginComponent } from '@app/pages/login/patient-login.component';
-import { QuestionnaireScreenComponent } from '@app/pages/questionnaire/questionnaire-screen.component';
-import { ProfessionalsListComponent } from '@app/pages/professionals/professionals-list.component';
+import { AppComponent } from './app.component';
 
 export const routes: Routes = [
   {
     path: '',
-    component: LandingPageComponent,
+    component: AppComponent,
     data: { title: 'Brain Health - Triagem Inteligente' }
-  },
-  {
-    path: 'acesso',
-    component: LoginSelectorComponent,
-    data: { title: 'Brain Health - Login' }
-  },
-  {
-    path: 'login',
-    children: [
-      {
-        path: 'professional',
-        component: ProfessionalLoginComponent,
-        data: { title: 'Login Profissional' }
-      },
-      {
-        path: 'patient',
-        component: PatientLoginComponent,
-        data: { title: 'Login Paciente' }
-      }
-    ]
-  },
-  {
-    path: 'signup',
-    children: [
-      {
-        path: 'professional',
-        redirectTo: '/login/professional',
-        pathMatch: 'full'
-      },
-      {
-        path: 'patient',
-        redirectTo: '/login/patient',
-        pathMatch: 'full'
-      }
-    ]
-  },
-  {
-    path: 'questionnaire',
-    component: QuestionnaireScreenComponent,
-    data: { title: 'Questionário de Triagem' }
-  },
-  {
-    path: 'professionals',
-    component: ProfessionalsListComponent,
-    data: { title: 'Profissionais Recomendados' }
-  },
-  {
-    path: 'dashboard',
-    canActivate: [AuthGuard],
-    children: [
-      {
-        path: '',
-        loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
-        data: { title: 'Dashboard' }
-      },
-      {
-        path: 'professional',
-        loadComponent: () => import('./pages/professional-dashboard/professional-dashboard.component').then(m => m.ProfessionalDashboardComponent),
-        data: { title: 'Dashboard Profissional' }
-      },
-      {
-        path: 'patient',
-        loadComponent: () => import('./pages/patient-dashboard/patient-dashboard.component').then(m => m.PatientDashboardComponent),
-        data: { title: 'Meu Dashboard' }
-      },
-      {
-        path: 'admin',
-        loadComponent: () => import('./pages/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
-        data: { title: 'Painel Administrativo' }
-      }
-    ]
-  },
-  {
-    path: 'professional/:id',
-    loadComponent: () => import('./pages/professional-detail/professional-detail.component').then(m => m.ProfessionalDetailComponent),
-    data: { title: 'Detalhes do Profissional' }
-  },
-  {
-    path: 'professional/edit/profile',
-    canActivate: [AuthGuard, ProfessionalGuard],
-    loadComponent: () => import('./pages/professional-edit/professional-edit.component').then(m => m.ProfessionalEditComponent),
-    data: { title: 'Editar Perfil' }
   },
   {
     path: '**',

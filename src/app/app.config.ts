@@ -5,7 +5,6 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { Router } from '@angular/router';
 
 import { routes } from './app.routes';
-import { authInterceptor } from '@app/interceptors/auth.interceptor';
 
 const navigationErrorHandler = (error: unknown) => {
   console.error('Navigation Error:', error);
@@ -21,7 +20,6 @@ export const appConfig: ApplicationConfig = {
     ),
     provideAnimations(),
     provideHttpClient(
-      withInterceptors([authInterceptor])
     )
   ]
 };
