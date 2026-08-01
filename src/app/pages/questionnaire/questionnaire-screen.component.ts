@@ -8,9 +8,11 @@ import {
   QuestionnaireTemplate,
   QuestionItem,
   QuestionOption,
-  BackendQuestionnaireQuestionsPayload
+  BackendQuestionnaireQuestionsPayload,
+  RecommendedProfessionalsResponse
 } from '@app/models/questionnaire.model';
 import { QuestionnaireService } from '@app/services/questionnaire.service';
+import { AiAnalysisService } from '@app/services/ai-analysis.service';
 import { FieldErrorComponent } from "@app/components/field-error.component";
 import { QuestionGroupComponent } from "@app/components/question-group/question-group.component";
 
@@ -32,6 +34,9 @@ export class QuestionnaireScreenComponent implements OnInit {
   readonly templateError = signal<string>('');
   readonly submitError = signal<string>('');
   readonly submissionResult = signal<QuestionnaireAnswerResponse | null>(null);
+  readonly aiRecommendation = signal<RecommendedProfessionalsResponse | null>(null);
+  readonly aiRecommendationLoading = signal<boolean>(false);
+  readonly aiRecommendationError = signal<string>('');
 
   questionnaireForm: FormGroup = this.fb.group({
     fullName: ['', [Validators.required, Validators.maxLength(150)]],
@@ -41,7 +46,8 @@ export class QuestionnaireScreenComponent implements OnInit {
 
   constructor(
     private readonly fb: FormBuilder,
-    private readonly questionnaireService: QuestionnaireService
+    private readonly questionnaireService: QuestionnaireService,
+    private readonly aiAnalysisService: AiAnalysisService
   ) {}
 
   ngOnInit(): void {
@@ -308,6 +314,8 @@ export class QuestionnaireScreenComponent implements OnInit {
   onSubmit(template: QuestionnaireTemplate): void {
     this.submitError.set('');
     this.submissionResult.set(null);
+    this.aiRecommendation.set(null);
+    this.aiRecommendationError.set('');
 
     if (this.questionnaireForm.invalid) {
       this.questionnaireForm.markAllAsTouched();
@@ -350,9 +358,43 @@ export class QuestionnaireScreenComponent implements OnInit {
       .subscribe({
         next: response => {
           this.submissionResult.set(response);
+          this.runAiRecommendation(freeTextDescription, response);
         },
         error: () => {
           this.submitError.set('Falha ao enviar questionario. Verifique os dados e tente novamente.');
+        }
+      });
+  }
+
+  private runAiRecommendation(description: string, result: QuestionnaireAnswerResponse): void {
+    const cleanDescription = description.trim();
+
+    if (cleanDescription.length === 0) {
+      this.aiRecommendationError.set('Preencha a descricao do problema para receber recomendacao de profissionais.');
+      return;
+    }
+
+    const contextParts = [
+      `Tipo: ${result.type}`,
+      `Pontuacao: ${result.totalScore ?? '-'}`,
+      `Classificacao: ${result.result ?? '-'}`,
+      `Recomendacao base: ${result.recommendations ?? '-'}`
+    ];
+
+    this.aiRecommendationLoading.set(true);
+
+    this.aiAnalysisService
+      .analyzeAndRecommend({
+        patientDescription: cleanDescription,
+        previousContext: contextParts.join(' | ')
+      })
+      .pipe(finalize(() => this.aiRecommendationLoading.set(false)))
+      .subscribe({
+        next: response => {
+          this.aiRecommendation.set(response);
+        },
+        error: () => {
+          this.aiRecommendationError.set('Nao foi possivel carregar a recomendacao de profissionais neste momento.');
         }
       });
   }

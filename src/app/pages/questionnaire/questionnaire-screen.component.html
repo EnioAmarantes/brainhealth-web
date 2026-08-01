@@ -82,9 +82,51 @@
         </section>
     }
 
+    @if (aiRecommendationLoading()) {
+        <section class="result ai-result">
+            <h3>Avaliacao de IA</h3>
+            <p>Processando analise e buscando profissionais disponiveis...</p>
+        </section>
+    }
+
+    @if (aiRecommendation(); as recommendation) {
+        <section class="result ai-result">
+            <h3>Avaliacao de IA</h3>
+            <p><strong>Sintese:</strong> {{ recommendation.problemSynthesis }}</p>
+            <p><strong>Urgencia:</strong> {{ recommendation.urgencyLevel }}</p>
+            <p><strong>Especialidades sugeridas:</strong> {{ recommendation.recommendedSpecialties.join(', ') }}</p>
+            <p><strong>Orientacao:</strong> {{ recommendation.generalRecommendations ?? '-' }}</p>
+
+            <h4>Profissionais disponiveis</h4>
+
+            @if (recommendation.recommendedProfessionals.length === 0) {
+                <p>Nenhum profissional disponivel com aderencia ao perfil no momento.</p>
+            } @else {
+                <div class="professionals-grid">
+                    @for (professional of recommendation.recommendedProfessionals; track professional.id) {
+                        <article class="professional-card">
+                            <h5>{{ professional.name }}</h5>
+                            <p><strong>Especialidades:</strong> {{ professional.specialties }}</p>
+                            <p><strong>Local:</strong> {{ professional.location }}</p>
+                            <p><strong>Compatibilidade:</strong> {{ professional.compatibilityScore }}%</p>
+                            <p><strong>Avaliacao:</strong> {{ professional.averageRating }}</p>
+                            <p><strong>Consulta:</strong> R$ {{ professional.consultationPrice }}</p>
+                            <p>{{ professional.recommendationReason ?? '' }}</p>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
+    }
+
+    <app-field-error
+        [errorMessage]="aiRecommendationError()"
+        [isErrorVisible]="aiRecommendationError().length > 0"
+    />
+
     <app-field-error
         [errorMessage]="submitError()"
-        [isErrorVisible]="submitError() !== null"
+        [isErrorVisible]="submitError().length > 0"
     />
   </section>
 </div>

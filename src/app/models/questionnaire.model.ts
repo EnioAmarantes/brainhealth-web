@@ -87,3 +87,33 @@ export interface QuestionnaireAnswerResponse {
   professionalNotes?: string;
 }
 
+export interface AIAnalysisRequest {
+  patientDescription: string;
+  previousContext?: string;
+}
+
+export interface RecommendedProfessional {
+  id: string;
+  name: string;
+  specialties: string;
+  bio?: string;
+  location: string;
+  consultationPrice: number;
+  averageRating: number;
+  totalPatients: number;
+  availableForNewPatients: boolean;
+  profilePhotoUrl?: string;
+  compatibilityScore: number;
+  recommendationReason?: string;
+}
+
+export interface RecommendedProfessionalsResponse {
+  problemSynthesis: string;
+  identifiedIssues: string[];
+  recommendedSpecialties: string[];
+  urgencyLevel: 'Low' | 'Medium' | 'High' | 'Critical' | string;
+  recommendedProfessionals: RecommendedProfessional[];
+  totalAvailable: number;
+  generalRecommendations?: string;
+}
+

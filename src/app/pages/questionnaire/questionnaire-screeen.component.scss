@@ -320,6 +320,36 @@ form {
   background: #fff5f7;
 }
 
+.ai-result {
+  border-left: 4px solid #2563eb;
+}
+
+.professionals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.professional-card {
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+  padding: 12px;
+  background: #f8fbff;
+}
+
+.professional-card h5 {
+  margin: 0 0 8px;
+  color: #1e3a8a;
+  font-size: 16px;
+}
+
+.professional-card p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #334155;
+}
+
 .consent-section.field-valid {
   border-color: #16a34a;
   background: #f6fff8;
