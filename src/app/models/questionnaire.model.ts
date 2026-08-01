@@ -62,6 +62,7 @@ export interface SubmitQuestionnaireAnswerRequest {
   answers: string;
   fullName: string;
   phoneNumber: string;
+  gender?: string;
   operatingSystem?: string;
   deviceType?: string;
   browserName?: string;

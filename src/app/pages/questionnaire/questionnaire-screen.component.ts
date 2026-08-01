@@ -25,6 +25,7 @@ import { QuestionGroupComponent } from "@app/components/question-group/question-
 })
 export class QuestionnaireScreenComponent implements OnInit {
   private static readonly PHQ9_TEMPLATE_TYPE = 'PHQ-9';
+  private static readonly DEFAULT_GENDER = 'prefiro_nao_informar';
   readonly maxDescriptionLength = 1000;
 
   readonly selectedTemplate = signal<QuestionnaireTemplate | null>(null);
@@ -41,6 +42,7 @@ export class QuestionnaireScreenComponent implements OnInit {
   questionnaireForm: FormGroup = this.fb.group({
     fullName: ['', [Validators.required, Validators.maxLength(150)]],
     phoneNumber: ['', [Validators.required, Validators.maxLength(30)]],
+    gender: [QuestionnaireScreenComponent.DEFAULT_GENDER],
     consentToDataCollection: [false, Validators.requiredTrue]
   });
 
@@ -112,6 +114,7 @@ export class QuestionnaireScreenComponent implements OnInit {
     const controls: Record<string, FormControl<string | boolean | null>> = {
       fullName: new FormControl<string | null>('', [Validators.required, Validators.maxLength(150)]),
       phoneNumber: new FormControl<string | null>('', [Validators.required, Validators.maxLength(30)]),
+      gender: new FormControl<string | null>(QuestionnaireScreenComponent.DEFAULT_GENDER),
       consentToDataCollection: new FormControl<boolean | null>(false, Validators.requiredTrue)
     };
 
@@ -338,6 +341,7 @@ export class QuestionnaireScreenComponent implements OnInit {
     const freeTextDescription = getStringValue('freeTextDescription');
     const fullName = getStringValue('fullName').trim();
     const phoneNumber = getStringValue('phoneNumber').trim();
+    const gender = getStringValue('gender').trim();
     const browserContext = this.getBrowserContext();
 
     this.submitting.set(true);
@@ -348,6 +352,7 @@ export class QuestionnaireScreenComponent implements OnInit {
         answers: JSON.stringify(answers),
         fullName,
         phoneNumber,
+        gender: gender || undefined,
         operatingSystem: browserContext.operatingSystem,
         deviceType: browserContext.deviceType,
         browserName: browserContext.browserName,
