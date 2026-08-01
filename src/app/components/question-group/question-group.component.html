@@ -1,0 +1,65 @@
+@for (question of questions; track question.key + '-' + $index) {
+    <div class="question-group">
+        <label [for]="question.key">
+            {{ question.text }}
+            @if (question.required) {
+                <app-required-span />
+            }
+        </label>
+
+        @switch (question.type) {
+            @case (QuestionType.SELECT) {
+                <app-choice-question
+                    [question]="question"
+                    [form]="form"
+                    (checkboxChanged)="emitCheckboxChange($event, question.key)"
+                    (singleChoiceCheckboxChanged)="emitSingleChoiceCheckboxChange($event, question.key)">
+                </app-choice-question>
+            }
+
+            @case (QuestionType.MULTIPLE_CHOICE) {
+                <app-choice-question
+                    [question]="question"
+                    [form]="form"
+                    (checkboxChanged)="emitCheckboxChange($event, question.key)"
+                    (singleChoiceCheckboxChanged)="emitSingleChoiceCheckboxChange($event, question.key)">
+                </app-choice-question>
+            }
+
+            @case (QuestionType.CHECKBOX) {
+                <app-choice-question
+                    [question]="question"
+                    [form]="form"
+                    (checkboxChanged)="emitCheckboxChange($event, question.key)"
+                    (singleChoiceCheckboxChanged)="emitSingleChoiceCheckboxChange($event, question.key)">
+                </app-choice-question>
+            }
+
+            @case (QuestionType.TEXT) {
+                <app-text-question [question]="question" [form]="form"></app-text-question>
+            }
+
+            @case (QuestionType.SCALE) {
+                <app-scale-question [question]="question" [form]="form"></app-scale-question>
+            }
+
+            @default {
+                <app-choice-question
+                    [question]="question"
+                    [form]="form"
+                    (checkboxChanged)="emitCheckboxChange($event, question.key)"
+                    (singleChoiceCheckboxChanged)="emitSingleChoiceCheckboxChange($event, question.key)">
+                </app-choice-question>
+            }
+        }
+
+        @if (shouldShowDescriptionCounter(question)) {
+            <p class="char-count">{{ getDescriptionLength(question.key) }}/{{ maxDescriptionLength }} caracteres</p>
+        }
+
+        <app-field-error
+            [errorMessage]="getErrorMessage(question)"
+            [isErrorVisible]="isControlInvalid(question.key)"
+        />
+    </div>
+}

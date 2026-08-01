@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://localhost:5001/api',
+  apiUrl: 'http://localhost:5000/api',
   appUrl: 'http://localhost:4200',
   googleClientId: 'YOUR_GOOGLE_CLIENT_ID',
   appleClientId: 'YOUR_APPLE_CLIENT_ID',

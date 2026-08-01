@@ -3,7 +3,7 @@ export interface QuestionnaireTemplate {
   type: string;
   version: string;
   title: string;
-  questions: string;
+  questions: string | QuestionnaireQuestionsPayload | BackendQuestionnaireQuestionsPayload;
 }
 
 export enum QuestionType {
@@ -16,6 +16,7 @@ export enum QuestionType {
 
 export interface QuestionOption {
   id: string;
+  code?: string;
   text: string;
   value: string;
   order: number;
@@ -31,6 +32,29 @@ export interface QuestionItem {
 
 export interface QuestionnaireQuestionsPayload {
   questions: QuestionItem[];
+}
+
+export interface BackendQuestionnaireQuestionsPayload {
+  questions: BackendQuestionItem[];
+}
+
+export interface BackendQuestionItem {
+  id: string;
+  code: string;
+  key?: string;
+  text: string;
+  type: string;
+  required: boolean;
+  order: number;
+  options: BackendQuestionOption[];
+}
+
+export interface BackendQuestionOption {
+  id: string;
+  code: string;
+  text: string;
+  value: string;
+  order: number;
 }
 
 export interface SubmitQuestionnaireAnswerRequest {

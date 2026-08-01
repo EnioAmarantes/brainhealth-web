@@ -1,0 +1,30 @@
+.question-group {
+	margin-bottom: 28px;
+}
+
+.question-group label {
+	display: block;
+	margin-bottom: 16px;
+	font-weight: 700;
+	color: #333;
+	font-size: 16px;
+	line-height: 1.4;
+}
+
+.char-count {
+	margin-top: 8px;
+	color: #8a94a6;
+	font-size: 12px;
+}
+
+@media (max-width: 1024px) {
+	.question-group label {
+		font-size: 15px;
+	}
+}
+
+@media (max-width: 768px) {
+	.question-group label {
+		font-size: 15px;
+	}
+}

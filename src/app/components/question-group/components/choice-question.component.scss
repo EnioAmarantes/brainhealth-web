@@ -1,0 +1,77 @@
+.checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.compact-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px 16px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkbox-item input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.checkbox-item label {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 400;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.single-choice-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.single-choice-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.single-choice-item input[type="radio"] {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.single-choice-item span {
+  margin: 0;
+  font-weight: 400;
+}
+
+@media (max-width: 1024px) {
+  .compact-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .compact-options {
+    gap: 8px 12px;
+  }
+}
+
+@media (max-width: 520px) {
+  .compact-options {
+    grid-template-columns: 1fr;
+  }
+}

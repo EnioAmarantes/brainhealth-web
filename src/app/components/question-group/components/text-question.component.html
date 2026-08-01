@@ -1,0 +1,12 @@
+<div [formGroup]="form">
+  <textarea
+    [id]="question.key"
+    [formControlName]="question.key"
+    [class.field-invalid]="isControlInvalid()"
+    [class.field-valid]="isControlValid()"
+    [maxlength]="question.key === 'freeTextDescription' ? 1000 : null"
+    [placeholder]="getPlaceholder()"
+    [attr.aria-label]="question.text"
+    [rows]="getRows()"
+  ></textarea>
+</div>
