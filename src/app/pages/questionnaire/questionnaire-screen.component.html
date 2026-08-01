@@ -1,0 +1,204 @@
+<div class="questionnaire-container">
+  <section class="questionnaire-box">
+    <div class="progress-bar">
+      <div class="progress"></div>
+    </div>
+
+    <h1>Questionario de Triagem</h1>
+    <p class="subtitle">Responda algumas perguntas para encontrar o profissional ideal</p>
+
+    <div class="template-notice">
+      Triagem atual usando template PHQ-9.
+    </div>
+
+    <p class="status" *ngIf="loadingTemplates()">Carregando template PHQ-9...</p>
+    <p class="error" *ngIf="templateError()">{{ templateError() }}</p>
+
+    <form *ngIf="selectedTemplate() as template" [formGroup]="questionnaireForm" (ngSubmit)="onSubmit(template)">
+      <div class="question-group" *ngFor="let question of questions()">
+        <label [for]="question.key">
+          {{ question.text }}
+          <span class="required" *ngIf="question.required">*</span>
+        </label>
+
+        <div [ngSwitch]="question.type">
+          <div *ngSwitchCase="QuestionType.SELECT" class="checkboxes">
+            <div *ngFor="let option of question.options" class="checkbox-item">
+              <input
+                type="checkbox"
+                [id]="option.id"
+                [value]="option.value"
+                [checked]="isOptionChecked(question.key, option.value)"
+                (change)="onSingleChoiceCheckboxChange($event, question.key)"
+                [attr.aria-label]="option.text"
+              />
+              <label [for]="option.id">{{ option.text }}</label>
+            </div>
+          </div>
+
+          <div *ngSwitchCase="QuestionType.MULTIPLE_CHOICE" class="single-choice-options">
+            <label *ngFor="let option of question.options" class="single-choice-item" [for]="option.id">
+              <input
+                type="radio"
+                [id]="option.id"
+                [value]="option.value"
+                [formControlName]="question.key"
+                [attr.aria-label]="option.text"
+              />
+              <span>{{ option.text }}</span>
+            </label>
+          </div>
+
+          <div *ngSwitchCase="QuestionType.CHECKBOX" class="checkboxes">
+            <div *ngFor="let option of question.options" class="checkbox-item">
+              <input
+                type="checkbox"
+                [id]="option.id"
+                [value]="option.value"
+                (change)="onCheckboxChange($event, question.key)"
+                [attr.aria-label]="option.text"
+              />
+              <label [for]="option.id">{{ option.text }}</label>
+            </div>
+          </div>
+
+          <div *ngSwitchCase="QuestionType.TEXT">
+            <textarea
+              [id]="question.key"
+              [formControlName]="question.key"
+              placeholder="Sua resposta aqui..."
+              [attr.aria-label]="question.text"
+              rows="4"
+            ></textarea>
+          </div>
+
+          <div *ngSwitchCase="QuestionType.SCALE" class="scale">
+            <div class="scale-options">
+              <label *ngFor="let option of question.options" [for]="option.id">
+                <input
+                  type="radio"
+                  [id]="option.id"
+                  [value]="option.value"
+                  [formControlName]="question.key"
+                  [attr.aria-label]="option.text"
+                />
+                <span>{{ option.text }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div *ngSwitchDefault>
+            <div class="checkboxes">
+              <div *ngFor="let option of question.options" class="checkbox-item">
+                <input
+                  type="checkbox"
+                  [id]="option.id"
+                  [value]="option.value"
+                  [checked]="isOptionChecked(question.key, option.value)"
+                  (change)="onSingleChoiceCheckboxChange($event, question.key)"
+                  [attr.aria-label]="option.text"
+                />
+                <label [for]="option.id">{{ option.text }}</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="field-error" *ngIf="isControlInvalid(question.key)">Essa pergunta e obrigatoria.</p>
+      </div>
+
+      <div class="question-group">
+        <label for="symptomsDuration">Por quanto tempo voce tem sentido esses sintomas?</label>
+        <div class="checkboxes">
+          <div class="checkbox-item">
+            <input
+              type="checkbox"
+              id="symptomsDuration-less-2-weeks"
+              value="Menos de 2 semanas"
+              [checked]="isOptionChecked('symptomsDuration', 'Menos de 2 semanas')"
+              (change)="onSingleChoiceCheckboxChange($event, 'symptomsDuration')"
+            />
+            <label for="symptomsDuration-less-2-weeks">Menos de 2 semanas</label>
+          </div>
+          <div class="checkbox-item">
+            <input
+              type="checkbox"
+              id="symptomsDuration-2-4-weeks"
+              value="2 a 4 semanas"
+              [checked]="isOptionChecked('symptomsDuration', '2 a 4 semanas')"
+              (change)="onSingleChoiceCheckboxChange($event, 'symptomsDuration')"
+            />
+            <label for="symptomsDuration-2-4-weeks">2 a 4 semanas</label>
+          </div>
+          <div class="checkbox-item">
+            <input
+              type="checkbox"
+              id="symptomsDuration-1-3-months"
+              value="1 a 3 meses"
+              [checked]="isOptionChecked('symptomsDuration', '1 a 3 meses')"
+              (change)="onSingleChoiceCheckboxChange($event, 'symptomsDuration')"
+            />
+            <label for="symptomsDuration-1-3-months">1 a 3 meses</label>
+          </div>
+          <div class="checkbox-item">
+            <input
+              type="checkbox"
+              id="symptomsDuration-more-3-months"
+              value="Mais de 3 meses"
+              [checked]="isOptionChecked('symptomsDuration', 'Mais de 3 meses')"
+              (change)="onSingleChoiceCheckboxChange($event, 'symptomsDuration')"
+            />
+            <label for="symptomsDuration-more-3-months">Mais de 3 meses</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="question-group">
+        <label for="freeTextDescription">
+          Descricao do seu problema
+          <span class="required">*</span>
+        </label>
+        <textarea
+          id="freeTextDescription"
+          rows="5"
+          maxlength="1000"
+          formControlName="freeTextDescription"
+          [class.field-invalid]="isControlInvalid('freeTextDescription')"
+          [class.field-valid]="isControlValid('freeTextDescription')"
+          placeholder="Descreva com suas palavras o que esta sentindo..."></textarea>
+        <p class="char-count">{{ getDescriptionLength() }}/1000 caracteres</p>
+        <p class="field-error" *ngIf="isControlInvalid('freeTextDescription')">
+          Esse campo e obrigatorio.
+        </p>
+      </div>
+
+      <div
+        class="consent-section"
+        [class.field-invalid]="isControlInvalid('consentToDataCollection')"
+        [class.field-valid]="isControlValid('consentToDataCollection')">
+        <label class="consent-item" for="consentToDataCollection">
+          <input id="consentToDataCollection" type="checkbox" formControlName="consentToDataCollection" />
+          <span>Declaro que li e concordo com a coleta e processamento dos dados informados.</span>
+        </label>
+        <p class="field-error" *ngIf="isControlInvalid('consentToDataCollection')">
+          Voce precisa consentir com a coleta de dados para continuar.
+        </p>
+      </div>
+
+      <button type="submit" [disabled]="submitting() || questionnaireForm.invalid">
+        {{ submitting() ? 'Enviando...' : 'Analisar com IA' }}
+      </button>
+    </form>
+
+    <section class="result" *ngIf="submissionResult() as result">
+      <h3>Resultado do questionario</h3>
+      <p><strong>Tipo:</strong> {{ result.type }}</p>
+      <p><strong>Pontuacao:</strong> {{ result.totalScore ?? '-' }}</p>
+      <p><strong>Classificacao:</strong> {{ result.result ?? '-' }}</p>
+      <p><strong>Recomendacao:</strong> {{ result.recommendations ?? '-' }}</p>
+      <p><strong>Concluido em:</strong> {{ result.completedAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+    </section>
+
+    <p class="error" *ngIf="submitError()">{{ submitError() }}</p>
+  </section>
+</div>

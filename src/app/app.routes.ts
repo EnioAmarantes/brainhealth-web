@@ -1,14 +1,19 @@
 import { Routes } from '@angular/router';
-import { AppComponent } from './app.component';
+import { QuestionnaireScreenComponent } from '@app/pages/questionnaire/questionnaire-screen.component';
 
 export const routes: Routes = [
   {
     path: '',
-    component: AppComponent,
-    data: { title: 'Brain Health - Triagem Inteligente' }
+    redirectTo: 'questionnaire',
+    pathMatch: 'full'
+  },
+  {
+    path: 'questionnaire',
+    component: QuestionnaireScreenComponent,
+    data: { title: 'Questionario de Triagem' }
   },
   {
     path: '**',
-    redirectTo: ''
+    redirectTo: 'questionnaire'
   }
 ];
