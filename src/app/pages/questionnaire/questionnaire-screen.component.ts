@@ -231,6 +231,27 @@ export class QuestionnaireScreenComponent implements OnInit {
     return !!control && control.valid && (control.dirty || control.touched);
   }
 
+  getImpactEmoji(value: string): string {
+    return {
+      '1': '😌',
+      '2': '🙂',
+      '3': '😐',
+      '4': '😟',
+      '5': '😣'
+    }[value] ?? value;
+  }
+
+  getScaleProgress(questionKey: string): number | null {
+    const rawValue = this.questionnaireForm.get(questionKey)?.value;
+    const numericValue = Number(rawValue);
+
+    if (!Number.isFinite(numericValue) || numericValue < 1 || numericValue > 5) {
+      return null;
+    }
+
+    return ((numericValue - 1) / 4) * 100;
+  }
+
   getDescriptionLength(): number {
     const value = this.questionnaireForm.get('freeTextDescription')?.value;
     return typeof value === 'string' ? value.length : 0;

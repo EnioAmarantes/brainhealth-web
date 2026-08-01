@@ -22,7 +22,7 @@
         </label>
 
         <div [ngSwitch]="question.type">
-          <div *ngSwitchCase="QuestionType.SELECT" class="checkboxes">
+          <div *ngSwitchCase="QuestionType.SELECT" class="checkboxes compact-options">
             <div *ngFor="let option of question.options" class="checkbox-item">
               <input
                 type="checkbox"
@@ -49,7 +49,13 @@
             </label>
           </div>
 
-          <div *ngSwitchCase="QuestionType.CHECKBOX" class="checkboxes">
+          <div
+            *ngSwitchCase="QuestionType.CHECKBOX"
+            class="checkboxes"
+            [class.compact-options]="question.key === 'q2'"
+            [class.q2-two-lines]="question.key === 'q2'"
+            [style.display]="question.key === 'q2' ? 'grid' : null"
+            [style.grid-template-columns]="question.key === 'q2' ? 'repeat(3, minmax(0, 1fr))' : null">
             <div *ngFor="let option of question.options" class="checkbox-item">
               <input
                 type="checkbox"
@@ -72,7 +78,7 @@
             ></textarea>
           </div>
 
-          <div *ngSwitchCase="QuestionType.SCALE" class="scale">
+          <div *ngSwitchCase="QuestionType.SCALE" class="scale" [class.impact-scale]="question.key === 'q4'">
             <div class="scale-options">
               <label *ngFor="let option of question.options" [for]="option.id">
                 <input
@@ -82,13 +88,26 @@
                   [formControlName]="question.key"
                   [attr.aria-label]="option.text"
                 />
-                <span>{{ option.text }}</span>
+                <span>{{ question.key === 'q4' ? getImpactEmoji(option.value) : option.text }}</span>
               </label>
+            </div>
+
+            <div class="intensity-wrap" *ngIf="question.key === 'q4'">
+              <div class="intensity-labels">
+                <span>Baixo impacto</span>
+                <span>Alto impacto</span>
+              </div>
+              <div class="intensity-bar" aria-hidden="true">
+                <span
+                  class="intensity-marker"
+                  *ngIf="getScaleProgress(question.key) !== null"
+                  [style.left.%]="getScaleProgress(question.key)"></span>
+              </div>
             </div>
           </div>
 
           <div *ngSwitchDefault>
-            <div class="checkboxes">
+            <div class="checkboxes compact-options">
               <div *ngFor="let option of question.options" class="checkbox-item">
                 <input
                   type="checkbox"
@@ -109,7 +128,7 @@
 
       <div class="question-group">
         <label for="symptomsDuration">Por quanto tempo voce tem sentido esses sintomas?</label>
-        <div class="checkboxes">
+        <div class="checkboxes compact-options">
           <div class="checkbox-item">
             <input
               type="checkbox"
