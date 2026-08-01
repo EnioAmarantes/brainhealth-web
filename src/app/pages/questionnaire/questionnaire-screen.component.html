@@ -25,6 +25,26 @@
         <p class="status">Nenhum template de questionario encontrado.</p>
     }@else {
         <form [formGroup]="questionnaireForm" (ngSubmit)="onSubmit(selectedTemplate()!)">
+        <div class="lead-fields">
+            <div class="lead-field" [class.field-invalid]="isControlInvalid('fullName')" [class.field-valid]="isControlValid('fullName')">
+                <label for="fullName">Nome completo</label>
+                <input id="fullName" type="text" formControlName="fullName" placeholder="Digite seu nome" />
+                <app-field-error
+                    [errorMessage]="'Nome e obrigatorio.'"
+                    [isErrorVisible]="isControlInvalid('fullName')"
+                />
+            </div>
+
+            <div class="lead-field" [class.field-invalid]="isControlInvalid('phoneNumber')" [class.field-valid]="isControlValid('phoneNumber')">
+                <label for="phoneNumber">Telefone</label>
+                <input id="phoneNumber" type="tel" formControlName="phoneNumber" placeholder="(11) 99999-9999" />
+                <app-field-error
+                    [errorMessage]="'Telefone e obrigatorio.'"
+                    [isErrorVisible]="isControlInvalid('phoneNumber')"
+                />
+            </div>
+        </div>
+
         <app-question-group
             [questions]="questions()"
             [form]="questionnaireForm"

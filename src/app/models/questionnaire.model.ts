@@ -60,6 +60,11 @@ export interface BackendQuestionOption {
 export interface SubmitQuestionnaireAnswerRequest {
   type: string;
   answers: string;
+  fullName: string;
+  phoneNumber: string;
+  operatingSystem?: string;
+  deviceType?: string;
+  browserName?: string;
   symptomsDuration?: string;
   freeTextDescription?: string;
 }

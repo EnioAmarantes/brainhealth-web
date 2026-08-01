@@ -34,6 +34,8 @@ export class QuestionnaireScreenComponent implements OnInit {
   readonly submissionResult = signal<QuestionnaireAnswerResponse | null>(null);
 
   questionnaireForm: FormGroup = this.fb.group({
+    fullName: ['', [Validators.required, Validators.maxLength(150)]],
+    phoneNumber: ['', [Validators.required, Validators.maxLength(30)]],
     consentToDataCollection: [false, Validators.requiredTrue]
   });
 
@@ -102,6 +104,8 @@ export class QuestionnaireScreenComponent implements OnInit {
 
   private resetForm(questions: QuestionItem[]): void {
     const controls: Record<string, FormControl<string | boolean | null>> = {
+      fullName: new FormControl<string | null>('', [Validators.required, Validators.maxLength(150)]),
+      phoneNumber: new FormControl<string | null>('', [Validators.required, Validators.maxLength(30)]),
       consentToDataCollection: new FormControl<boolean | null>(false, Validators.requiredTrue)
     };
 
@@ -324,6 +328,9 @@ export class QuestionnaireScreenComponent implements OnInit {
 
     const symptomsDuration = getStringValue('q3');
     const freeTextDescription = getStringValue('freeTextDescription');
+    const fullName = getStringValue('fullName').trim();
+    const phoneNumber = getStringValue('phoneNumber').trim();
+    const browserContext = this.getBrowserContext();
 
     this.submitting.set(true);
 
@@ -331,6 +338,11 @@ export class QuestionnaireScreenComponent implements OnInit {
       .submitAnswers({
         type: template.type,
         answers: JSON.stringify(answers),
+        fullName,
+        phoneNumber,
+        operatingSystem: browserContext.operatingSystem,
+        deviceType: browserContext.deviceType,
+        browserName: browserContext.browserName,
         symptomsDuration: symptomsDuration || undefined,
         freeTextDescription: freeTextDescription || undefined
       })
@@ -343,5 +355,80 @@ export class QuestionnaireScreenComponent implements OnInit {
           this.submitError.set('Falha ao enviar questionario. Verifique os dados e tente novamente.');
         }
       });
+  }
+
+  private getBrowserContext(): { operatingSystem: string; deviceType: string; browserName: string } {
+    const userAgent = navigator.userAgent || '';
+    const lowerUserAgent = userAgent.toLowerCase();
+
+    return {
+      operatingSystem: this.detectOperatingSystem(userAgent),
+      deviceType: this.detectDeviceType(lowerUserAgent),
+      browserName: this.detectBrowserName(userAgent)
+    };
+  }
+
+  private detectOperatingSystem(userAgent: string): string {
+    if (/Windows NT/i.test(userAgent)) {
+      return 'Windows';
+    }
+
+    if (/Mac OS X|Macintosh/i.test(userAgent)) {
+      return 'macOS';
+    }
+
+    if (/Android/i.test(userAgent)) {
+      return 'Android';
+    }
+
+    if (/iPhone|iPad|iPod/i.test(userAgent)) {
+      return 'iOS';
+    }
+
+    if (/Linux/i.test(userAgent)) {
+      return 'Linux';
+    }
+
+    return 'Unknown';
+  }
+
+  private detectDeviceType(lowerUserAgent: string): string {
+    if (/ipad|tablet|playbook|silk/i.test(lowerUserAgent)) {
+      return 'tablet';
+    }
+
+    if (/mobi|android|iphone|ipod|blackberry|iemobile|opera mini/i.test(lowerUserAgent)) {
+      return 'mobile';
+    }
+
+    return 'desktop';
+  }
+
+  private detectBrowserName(userAgent: string): string {
+    if (/Edg\//i.test(userAgent)) {
+      return 'Edge';
+    }
+
+    if (/OPR\//i.test(userAgent) || /Opera/i.test(userAgent)) {
+      return 'Opera';
+    }
+
+    if (/Chrome\//i.test(userAgent) && !/Edg\//i.test(userAgent) && !/OPR\//i.test(userAgent)) {
+      return 'Chrome';
+    }
+
+    if (/Safari\//i.test(userAgent) && !/Chrome\//i.test(userAgent)) {
+      return 'Safari';
+    }
+
+    if (/Firefox\//i.test(userAgent)) {
+      return 'Firefox';
+    }
+
+    if (/MSIE|Trident\//i.test(userAgent)) {
+      return 'Internet Explorer';
+    }
+
+    return 'Unknown';
   }
 }
