@@ -26,7 +26,7 @@
     }@else {
         <form [formGroup]="questionnaireForm" (ngSubmit)="onSubmit(selectedTemplate()!)">
         <app-question-group
-            [questions]="questionGroupQuestions()"
+            [questions]="questions()"
             [form]="questionnaireForm"
             (checkboxChanged)="onCheckboxChange($event.event, $event.questionKey)"
             (singleChoiceCheckboxChanged)="onSingleChoiceCheckboxChange($event.event, $event.questionKey)">

@@ -8,7 +8,6 @@ import {
   QuestionnaireTemplate,
   QuestionItem,
   QuestionOption,
-  QuestionnaireQuestionsPayload,
   BackendQuestionnaireQuestionsPayload
 } from '@app/models/questionnaire.model';
 import { QuestionnaireService } from '@app/services/questionnaire.service';
@@ -26,43 +25,15 @@ export class QuestionnaireScreenComponent implements OnInit {
   private static readonly PHQ9_TEMPLATE_TYPE = 'PHQ-9';
   readonly maxDescriptionLength = 1000;
 
-  readonly QuestionType = QuestionType;
-
   readonly selectedTemplate = signal<QuestionnaireTemplate | null>(null);
   readonly questions = signal<QuestionItem[]>([]);
-  readonly questionGroupQuestions = signal<QuestionItem[]>([]);
   readonly loadingTemplates = signal<boolean>(false);
   readonly submitting = signal<boolean>(false);
   readonly templateError = signal<string>('');
   readonly submitError = signal<string>('');
   readonly submissionResult = signal<QuestionnaireAnswerResponse | null>(null);
-  contactErrorMessage: string | null = null;
-
-  private readonly supplementalQuestions: QuestionItem[] = [
-    {
-      key: 'symptomsDuration',
-      text: 'Por quanto tempo voce tem sentido esses sintomas?',
-      type: QuestionType.SELECT,
-      required: false,
-      options: [
-        this.buildOption('symptomsDuration-less-2-weeks', 'Menos de 2 semanas', 'Menos de 2 semanas', 1),
-        this.buildOption('symptomsDuration-2-4-weeks', '2 a 4 semanas', '2 a 4 semanas', 2),
-        this.buildOption('symptomsDuration-1-3-months', '1 a 3 meses', '1 a 3 meses', 3),
-        this.buildOption('symptomsDuration-more-3-months', 'Mais de 3 meses', 'Mais de 3 meses', 4)
-      ]
-    },
-    {
-      key: 'freeTextDescription',
-      text: 'Descricao do seu problema',
-      type: QuestionType.TEXT,
-      required: true,
-      options: []
-    }
-  ];
 
   questionnaireForm: FormGroup = this.fb.group({
-    symptomsDuration: [''],
-    freeTextDescription: ['', [Validators.required, Validators.maxLength(this.maxDescriptionLength)]],
     consentToDataCollection: [false, Validators.requiredTrue]
   });
 
@@ -118,13 +89,11 @@ export class QuestionnaireScreenComponent implements OnInit {
         this.selectedTemplate.set(template);
         const questions = this.parseQuestions(template.questions);
         this.questions.set(questions);
-        this.questionGroupQuestions.set(this.buildQuestionGroupQuestions(questions));
         this.resetForm(questions);
       },
       error: () => {
         this.selectedTemplate.set(null);
         this.questions.set([]);
-        this.questionGroupQuestions.set([]);
         this.resetForm([]);
         this.templateError.set('Nao foi possivel carregar o template selecionado.');
       }
@@ -133,19 +102,19 @@ export class QuestionnaireScreenComponent implements OnInit {
 
   private resetForm(questions: QuestionItem[]): void {
     const controls: Record<string, FormControl<string | boolean | null>> = {
-      symptomsDuration: new FormControl<string | null>(''),
-      freeTextDescription: new FormControl<string | null>(
-        '',
-        [Validators.required, Validators.maxLength(this.maxDescriptionLength)]
-      ),
       consentToDataCollection: new FormControl<boolean | null>(false, Validators.requiredTrue)
     };
 
     for (const question of questions) {
-      const initialValue = question.type === QuestionType.CHECKBOX ? '' : '';
+      const validators = question.required ? [Validators.required] : [];
+
+      if (question.key === 'freeTextDescription') {
+        validators.push(Validators.maxLength(this.maxDescriptionLength));
+      }
+
       controls[question.key] = new FormControl<string | null>(
-        initialValue,
-        question.required ? Validators.required : []
+        '',
+        validators
       );
     }
 
@@ -155,61 +124,66 @@ export class QuestionnaireScreenComponent implements OnInit {
     });
   }
 
-  private parseQuestions(
-    rawQuestions: string | QuestionnaireQuestionsPayload | BackendQuestionnaireQuestionsPayload
-  ): QuestionItem[] {
+  private parseQuestions(rawQuestions: QuestionnaireTemplate['questions']): QuestionItem[] {
     if (!rawQuestions) {
       return [];
     }
 
     try {
       const parsed = typeof rawQuestions === 'string'
-        ? JSON.parse(rawQuestions) as QuestionnaireQuestionsPayload | BackendQuestionnaireQuestionsPayload | Record<string, string>
+        ? JSON.parse(rawQuestions) as BackendQuestionnaireQuestionsPayload
         : rawQuestions;
 
-      if (typeof parsed === 'object' && parsed !== null && 'questions' in parsed) {
-        const directQuestions = (parsed as { questions?: unknown }).questions;
-        const nestedQuestions =
-          directQuestions &&
-          typeof directQuestions === 'object' &&
-          'questions' in (directQuestions as Record<string, unknown>)
-            ? (directQuestions as { questions?: unknown }).questions
-            : undefined;
+      const normalizedQuestions = this.extractQuestionsArray(parsed);
 
-        const normalizedQuestions = Array.isArray(directQuestions)
-          ? directQuestions
-          : (Array.isArray(nestedQuestions) ? nestedQuestions : null);
+      return normalizedQuestions
+        .slice()
+        .sort((left, right) => this.extractQuestionOrder(left as { order?: unknown }) - this.extractQuestionOrder(right as { order?: unknown }))
+        .map(question => {
+          const rawQuestion = question as {
+            key?: unknown;
+            code?: unknown;
+            text?: unknown;
+            type?: unknown;
+            required?: unknown;
+            options?: unknown;
+          };
+          const mappedKey = this.extractQuestionKey(rawQuestion);
 
-        if (normalizedQuestions === null) {
-          return [];
-        }
-
-        return normalizedQuestions
-          .slice()
-          .sort((left, right) => this.extractQuestionOrder(left as { order?: unknown }) - this.extractQuestionOrder(right as { order?: unknown }))
-          .map(question => {
-            const mappedKey = this.extractQuestionKey(question as { key?: unknown; code?: unknown });
-
-            return {
-              key: mappedKey,
-              text: question.text,
-              type: this.normalizeQuestionType(question.type),
-              required: question.required ?? true,
-              options: this.normalizeOptions(question.options)
-            };
-          });
-      }
-
-      return Object.entries(parsed as Record<string, string>).map(([key, text], index) => ({
-        key,
-        text,
-        type: QuestionType.MULTIPLE_CHOICE,
-        required: true,
-        options: this.buildDefaultPhqOptions(key, index)
-      }));
+          return {
+            key: mappedKey,
+            text: typeof rawQuestion.text === 'string' ? rawQuestion.text : '',
+            type: this.normalizeQuestionType(typeof rawQuestion.type === 'string' ? rawQuestion.type : undefined),
+            required: rawQuestion.required !== false,
+            options: this.normalizeOptions(rawQuestion.options)
+          };
+        })
+        .filter(question => question.key.length > 0 && question.text.length > 0);
     } catch {
       return [];
     }
+  }
+
+  private extractQuestionsArray(parsed: unknown): unknown[] {
+    if (!parsed || typeof parsed !== 'object') {
+      return [];
+    }
+
+    const directQuestions = (parsed as { questions?: unknown }).questions;
+
+    if (Array.isArray(directQuestions)) {
+      return directQuestions;
+    }
+
+    if (directQuestions && typeof directQuestions === 'object') {
+      const nestedQuestions = (directQuestions as { questions?: unknown }).questions;
+
+      if (Array.isArray(nestedQuestions)) {
+        return nestedQuestions;
+      }
+    }
+
+    return [];
   }
 
   private extractQuestionKey(question: { key?: unknown; code?: unknown }): string {
@@ -274,26 +248,6 @@ export class QuestionnaireScreenComponent implements OnInit {
     return QuestionType.MULTIPLE_CHOICE;
   }
 
-  private buildDefaultPhqOptions(key: string, index: number) {
-    const prefix = `${key}-o`;
-    return [
-      { id: `${prefix}0`, text: 'Nenhum dia', value: '0', order: 1 },
-      { id: `${prefix}1`, text: 'Varios dias', value: '1', order: 2 },
-      { id: `${prefix}2`, text: 'Mais da metade dos dias', value: '2', order: 3 },
-      { id: `${prefix}3`, text: 'Quase todos os dias', value: '3', order: 4 }
-    ];
-  }
-
-  private buildOption(id: string, text: string, value: string, order: number): QuestionOption {
-    return { id, text, value, order };
-  }
-
-  private buildQuestionGroupQuestions(questions: QuestionItem[]): QuestionItem[] {
-    const result = [...questions];
-
-    return result;
-  }
-
   onCheckboxChange(event: Event, questionKey: string): void {
     const checkbox = event.target as HTMLInputElement;
     const value = checkbox.value;
@@ -347,32 +301,6 @@ export class QuestionnaireScreenComponent implements OnInit {
     return !!control && control.valid && (control.dirty || control.touched);
   }
 
-  getImpactEmoji(value: string): string {
-    return {
-      '1': '😌',
-      '2': '🙂',
-      '3': '😐',
-      '4': '😟',
-      '5': '😣'
-    }[value] ?? value;
-  }
-
-  getScaleProgress(questionKey: string): number | null {
-    const rawValue = this.questionnaireForm.get(questionKey)?.value;
-    const numericValue = Number(rawValue);
-
-    if (!Number.isFinite(numericValue) || numericValue < 1 || numericValue > 5) {
-      return null;
-    }
-
-    return ((numericValue - 1) / 4) * 100;
-  }
-
-  getDescriptionLength(): number {
-    const value = this.questionnaireForm.get('freeTextDescription')?.value;
-    return typeof value === 'string' ? value.length : 0;
-  }
-
   onSubmit(template: QuestionnaireTemplate): void {
     this.submitError.set('');
     this.submissionResult.set(null);
@@ -394,7 +322,7 @@ export class QuestionnaireScreenComponent implements OnInit {
       answers[question.key] = getStringValue(question.key);
     }
 
-    const symptomsDuration = getStringValue('symptomsDuration') || getStringValue('q3');
+    const symptomsDuration = getStringValue('q3');
     const freeTextDescription = getStringValue('freeTextDescription');
 
     this.submitting.set(true);
