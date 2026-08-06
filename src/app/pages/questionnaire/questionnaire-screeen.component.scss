@@ -96,7 +96,21 @@ form {
   font-size: 15px;
 }
 
+.lead-field select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 15px;
+  background: #fff;
+}
+
 .lead-field.field-invalid input {
+  border-color: #e11d48;
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
+}
+
+.lead-field.field-invalid select {
   border-color: #e11d48;
   box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
 }
@@ -104,6 +118,15 @@ form {
 .lead-field.field-valid input {
   border-color: #16a34a;
   box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+}
+
+.lead-field.field-valid select {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+}
+
+.gender-field {
+  grid-column: 1 / -1;
 }
 
 .question-group {

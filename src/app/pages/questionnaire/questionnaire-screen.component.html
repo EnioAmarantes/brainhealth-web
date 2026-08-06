@@ -44,13 +44,13 @@
                 />
             </div>
 
-            <div class="lead-field" [class.field-invalid]="isControlInvalid('gender')" [class.field-valid]="isControlValid('gender')">
-                <label for="gender">Genero (opcional)</label>
+            <div class="lead-field gender-field" [class.field-invalid]="isControlInvalid('gender')" [class.field-valid]="isControlValid('gender')">
+                <label for="gender">Gênero (opcional)</label>
                 <select id="gender" formControlName="gender">
-                    <option value="prefiro_nao_informar">Prefiro nao informar</option>
+                    <option value="prefiro_nao_informar">Prefiro não informar</option>
                     <option value="feminino">Feminino</option>
                     <option value="masculino">Masculino</option>
-                    <option value="nao_binario">Nao binario</option>
+                    <option value="nao_binario">Não binário</option>
                     <option value="outro">Outro</option>
                 </select>
             </div>
