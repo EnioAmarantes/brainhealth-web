@@ -2,9 +2,9 @@
   <section class="results-box">
     <div class="results-header">
       <h1>Profissionais Recomendados</h1>
-      <p class="subtitle">Escolha o profissional ideal para continuar seu cuidado</p>
+      <p class="subtitle">Escolha quem vai acompanhar voce neste momento</p>
       <p class="ai-disclaimer">
-        Recomendação assistida por IA para triagem inicial. Não substitui avaliação clínica individual.
+        Esta analise e um primeiro passo. O profissional escolhido fara a avaliacao completa.
       </p>
 
       <button type="button" class="back-button" (click)="navigateBack()">
@@ -25,7 +25,7 @@
 
       @if (data.recommendedProfessionals.length === 0) {
         <section class="empty-state">
-          <p>Nenhum profissional disponível com aderência ao perfil no momento.</p>
+          <p>Nenhum profissional disponivel agora. Assim que houver compatibilidade, entraremos em contato.</p>
         </section>
       } @else {
         <section class="professionals-grid">
@@ -49,7 +49,7 @@
 
               <div class="professional-actions">
                 <button type="button" class="whatsapp-button" (click)="startWhatsAppContact(professional)">
-                  Falar no WhatsApp
+                  Conversar no WhatsApp
                 </button>
               </div>
             </article>

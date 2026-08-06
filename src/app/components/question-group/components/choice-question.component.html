@@ -11,6 +11,7 @@
               [checked]="isOptionChecked(option.value)"
               (change)="onOptionChange($event)"
               [attr.aria-label]="option.text"
+              [attr.aria-describedby]="question.key + '-error'"
             />
             <label [for]="option.id">{{ option.text }}</label>
           </div>
@@ -28,6 +29,7 @@
               [value]="option.value"
               [formControlName]="question.key"
               [attr.aria-label]="option.text"
+              [attr.aria-describedby]="question.key + '-error'"
             />
             <span>{{ option.text }}</span>
           </label>
@@ -53,6 +55,7 @@
               [checked]="isOptionChecked(option.value)"
               (change)="onOptionChange($event)"
               [attr.aria-label]="option.text"
+              [attr.aria-describedby]="question.key + '-error'"
             />
             <label [for]="option.id">{{ option.text }}</label>
           </div>

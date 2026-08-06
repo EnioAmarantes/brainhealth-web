@@ -7,6 +7,8 @@
     [maxlength]="question.key === 'freeTextDescription' ? 1000 : null"
     [placeholder]="getPlaceholder()"
     [attr.aria-label]="question.text"
+    [attr.aria-describedby]="question.key + '-error'"
+    [attr.aria-invalid]="isControlInvalid()"
     [rows]="getRows()"
   ></textarea>
 </div>

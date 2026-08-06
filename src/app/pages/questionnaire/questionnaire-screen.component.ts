@@ -321,10 +321,10 @@ export class QuestionnaireScreenComponent implements OnInit {
 
   loadingMessage(): string {
     if (this.submitting()) {
-      return 'Estamos enviando suas respostas com seguranca.';
+      return 'Enviando seus dados de forma segura...';
     }
 
-    return 'A IA esta analisando seu perfil e buscando os melhores profissionais.';
+    return 'Analisando seu perfil para sugerir profissionais compativeis...';
   }
 
   onSubmit(template: QuestionnaireTemplate): void {

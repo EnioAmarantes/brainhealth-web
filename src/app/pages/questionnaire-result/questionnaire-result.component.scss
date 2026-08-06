@@ -5,16 +5,17 @@
 .results-container {
   min-height: 100vh;
   padding: 18px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #5b6fe8 0%, #4f46e5 55%, #4338ca 100%);
 }
 
 .results-box {
   max-width: 1120px;
   margin: 0 auto;
-  background: #fff;
-  border-radius: 12px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
   padding: 28px 22px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  box-shadow: var(--shadow-md);
 }
 
 .results-header h1 {
@@ -25,35 +26,41 @@
 
 .subtitle {
   margin: 8px 0 12px;
-  color: #4b5563;
+  color: var(--color-text-secondary);
 }
 
 .ai-disclaimer {
   margin: 0 0 14px;
-  background: rgba(59, 130, 246, 0.08);
-  border-left: 4px solid #3b82f6;
-  border-radius: 8px;
+  background: #eef2ff;
+  border-left: 4px solid var(--color-primary);
+  border-radius: var(--radius-md);
   padding: 10px 12px;
-  color: #1f2937;
+  color: var(--color-text-primary);
   font-size: 13px;
 }
 
 .back-button {
   margin-top: 6px;
-  border: 1px solid #cbd5e1;
-  background: #f8fafc;
-  color: #0f172a;
-  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-md);
   padding: 10px 14px;
   cursor: pointer;
   font-weight: 700;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.back-button:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .summary-card {
   margin-top: 18px;
-  border: 1px solid #dbeafe;
-  background: #f8fbff;
-  border-radius: 12px;
+  border: 1px solid #c7d2fe;
+  background: #f8faff;
+  border-radius: var(--radius-lg);
   padding: 14px;
 }
 
@@ -65,7 +72,7 @@
 
 .summary-card p {
   margin: 6px 0;
-  color: #334155;
+  color: var(--color-text-secondary);
 }
 
 .professionals-grid {
@@ -77,12 +84,18 @@
 
 .professional-card {
   border: 1px solid #dbeafe;
-  border-radius: 12px;
-  background: #fff;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
   padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.professional-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 .professional-header {
@@ -102,7 +115,7 @@
 
 .specialties {
   margin: 6px 0 0;
-  color: #475569;
+  color: var(--color-text-secondary);
   font-size: 13px;
 }
 
@@ -119,7 +132,7 @@
 
 .professional-body p {
   margin: 6px 0;
-  color: #334155;
+  color: var(--color-text-secondary);
   font-size: 14px;
 }
 
@@ -130,12 +143,21 @@
 .whatsapp-button {
   width: 100%;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 11px 12px;
   background: #22c55e;
   color: #fff;
   font-weight: 800;
   cursor: pointer;
+  transition: filter 0.2s ease, transform 0.15s ease;
+}
+
+.whatsapp-button:hover {
+  filter: brightness(1.03);
+}
+
+.whatsapp-button:active {
+  transform: translateY(1px);
 }
 
 .empty-state {

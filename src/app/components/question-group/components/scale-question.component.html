@@ -9,6 +9,7 @@
             [value]="option.value"
             [formControlName]="question.key"
             [attr.aria-label]="option.text"
+            [attr.aria-describedby]="question.key + '-error'"
           />
           <span>{{ question.key === 'q4' ? getImpactEmoji(option.value) : option.text }}</span>
         </label>

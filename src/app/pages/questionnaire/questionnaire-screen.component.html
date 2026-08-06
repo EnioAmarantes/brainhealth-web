@@ -4,15 +4,15 @@
       <div class="progress"></div>
     </div>
 
-    <h1>Questionario de Triagem</h1>
-    <p class="subtitle">Responda algumas perguntas para encontrar o profissional ideal</p>
+    <h1>Conheca seu caminho de cuidado</h1>
+    <p class="subtitle">Ajudamos voce a encontrar o profissional certo com poucas perguntas</p>
 
-    <div class="template-notice">
-      Triagem atual usando template PHQ-9.
-    </div>
+        <div class="template-notice">
+            Usando um questionario clinico reconhecido para triagem inicial.
+        </div>
 
     @if(loadingTemplates()){
-        <p class="status">Carregando template PHQ-9...</p>
+        <p class="status">Preparando questionario...</p>
     }
     @if(templateError()){
         <app-field-error
@@ -22,23 +22,25 @@
     }
 
     @if(selectedTemplate() === null && !loadingTemplates() && !templateError()){
-        <p class="status">Nenhum template de questionario encontrado.</p>
+        <p class="status">Desculpe, nao conseguimos carregar o questionario agora. Tente novamente em alguns minutos.</p>
     }@else {
-        <form [formGroup]="questionnaireForm" (ngSubmit)="onSubmit(selectedTemplate()!)">
+        <form [formGroup]="questionnaireForm" (ngSubmit)="onSubmit(selectedTemplate()!)" [attr.aria-busy]="isProcessing()">
         <div class="lead-fields">
             <div class="lead-field" [class.field-invalid]="isControlInvalid('fullName')" [class.field-valid]="isControlValid('fullName')">
-                <label for="fullName">Nome completo</label>
-                <input id="fullName" type="text" formControlName="fullName" placeholder="Digite seu nome" />
+                <label for="fullName">Nome</label>
+                <input id="fullName" type="text" formControlName="fullName" placeholder="Digite seu nome" aria-describedby="fullName-error" [attr.aria-invalid]="isControlInvalid('fullName')" />
                 <app-field-error
+                    [errorId]="'fullName-error'"
                     [errorMessage]="'Nome e obrigatorio.'"
                     [isErrorVisible]="isControlInvalid('fullName')"
                 />
             </div>
 
             <div class="lead-field" [class.field-invalid]="isControlInvalid('phoneNumber')" [class.field-valid]="isControlValid('phoneNumber')">
-                <label for="phoneNumber">Telefone</label>
-                <input id="phoneNumber" type="tel" formControlName="phoneNumber" placeholder="(11) 99999-9999" />
+                <label for="phoneNumber">Telefone para contato</label>
+                <input id="phoneNumber" type="tel" formControlName="phoneNumber" placeholder="(11) 99999-9999" aria-describedby="phoneNumber-error" [attr.aria-invalid]="isControlInvalid('phoneNumber')" />
                 <app-field-error
+                    [errorId]="'phoneNumber-error'"
                     [errorMessage]="'Telefone e obrigatorio.'"
                     [isErrorVisible]="isControlInvalid('phoneNumber')"
                 />
@@ -46,7 +48,7 @@
 
             <div class="lead-field gender-field" [class.field-invalid]="isControlInvalid('gender')" [class.field-valid]="isControlValid('gender')">
                 <label for="gender">Gênero (opcional)</label>
-                <select id="gender" formControlName="gender">
+                <select id="gender" formControlName="gender" aria-label="Genero opcional">
                     <option value="prefiro_nao_informar">Prefiro não informar</option>
                     <option value="feminino">Feminino</option>
                     <option value="masculino">Masculino</option>
@@ -68,17 +70,18 @@
             [class.field-invalid]="isControlInvalid('consentToDataCollection')"
             [class.field-valid]="isControlValid('consentToDataCollection')">
             <label class="consent-item" for="consentToDataCollection">
-            <input id="consentToDataCollection" type="checkbox" formControlName="consentToDataCollection" />
+            <input id="consentToDataCollection" type="checkbox" formControlName="consentToDataCollection" aria-describedby="consent-error" [attr.aria-invalid]="isControlInvalid('consentToDataCollection')" />
             <span>Declaro que li e concordo com a coleta e processamento dos dados informados.</span>
             </label>
             <app-field-error
+                [errorId]="'consent-error'"
                 [errorMessage]="'Você precisa consentir com a coleta de dados para continuar.'"
                 [isErrorVisible]="isControlInvalid('consentToDataCollection')"
             />
         </div>
 
         <button type="submit" [disabled]="isProcessing() || questionnaireForm.invalid">
-            {{ isProcessing() ? 'Processando...' : 'Analisar com IA' }}
+            {{ isProcessing() ? 'Processando...' : 'Encontrar profissional' }}
         </button>
         </form>
     }

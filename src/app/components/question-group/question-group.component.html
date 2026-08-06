@@ -58,6 +58,7 @@
         }
 
         <app-field-error
+            [errorId]="question.key + '-error'"
             [errorMessage]="getErrorMessage(question)"
             [isErrorVisible]="isControlInvalid(question.key)"
         />

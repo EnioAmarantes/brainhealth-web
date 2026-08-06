@@ -14,12 +14,18 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  min-height: 44px;
 }
 
 .checkbox-item input[type="checkbox"] {
   width: 20px;
   height: 20px;
   cursor: pointer;
+}
+
+.checkbox-item input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .checkbox-item label {
@@ -43,6 +49,7 @@
   font-size: 16px;
   line-height: 1.4;
   cursor: pointer;
+  min-height: 44px;
 }
 
 .single-choice-item input[type="radio"] {
@@ -50,6 +57,11 @@
   width: 20px;
   height: 20px;
   cursor: pointer;
+}
+
+.single-choice-item input[type="radio"]:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .single-choice-item span {
