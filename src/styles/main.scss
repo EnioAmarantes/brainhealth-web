@@ -15,7 +15,7 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: 16px;
   color: var(--color-text-primary);
-  background: #f1f5f9;
+  background: var(--gradient-page);
 }
 
 body {
@@ -35,11 +35,11 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #667eea;
+  background: var(--color-primary);
   border-radius: 4px;
 
   &:hover {
-    background: #764ba2;
+    background: var(--color-primary-strong);
   }
 }
 
@@ -104,11 +104,11 @@ textarea {
 }
 
 .text-muted {
-  color: #999;
+  color: var(--color-text-muted);
 }
 
 .text-primary {
-  color: #667eea;
+  color: var(--color-primary);
 }
 
 .mt-1 { margin-top: 8px; }

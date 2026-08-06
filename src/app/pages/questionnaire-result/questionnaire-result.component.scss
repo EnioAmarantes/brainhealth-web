@@ -5,7 +5,7 @@
 .results-container {
   min-height: 100vh;
   padding: 18px;
-  background: linear-gradient(135deg, #5b6fe8 0%, #4f46e5 55%, #4338ca 100%);
+  background: var(--gradient-page);
 }
 
 .results-box {
@@ -21,7 +21,7 @@
 .results-header h1 {
   margin: 0;
   font-size: 30px;
-  color: #1f2937;
+  color: var(--color-text-primary);
 }
 
 .subtitle {
@@ -31,7 +31,7 @@
 
 .ai-disclaimer {
   margin: 0 0 14px;
-  background: #eef2ff;
+  background: var(--color-primary-soft);
   border-left: 4px solid var(--color-primary);
   border-radius: var(--radius-md);
   padding: 10px 12px;
@@ -58,15 +58,15 @@
 
 .summary-card {
   margin-top: 18px;
-  border: 1px solid #c7d2fe;
-  background: #f8faff;
+  border: 1px solid #d1e1d8;
+  background: #f8fcfa;
   border-radius: var(--radius-lg);
   padding: 14px;
 }
 
 .summary-card h2 {
   margin: 0 0 10px;
-  color: #1e3a8a;
+  color: var(--color-primary-strong);
   font-size: 20px;
 }
 
@@ -83,7 +83,7 @@
 }
 
 .professional-card {
-  border: 1px solid #dbeafe;
+  border: 1px solid #d9e4dd;
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   padding: 12px;
@@ -124,7 +124,7 @@
   text-align: center;
   border-radius: 999px;
   padding: 6px 8px;
-  background: #16a34a;
+  background: var(--color-success);
   color: #fff;
   font-weight: 800;
   font-size: 13px;
@@ -145,7 +145,7 @@
   border: 0;
   border-radius: var(--radius-md);
   padding: 11px 12px;
-  background: #22c55e;
+  background: var(--color-whatsapp);
   color: #fff;
   font-weight: 800;
   cursor: pointer;
@@ -162,15 +162,15 @@
 
 .empty-state {
   margin-top: 16px;
-  border: 1px dashed #94a3b8;
+  border: 1px dashed #a7bcb0;
   border-radius: 10px;
   padding: 16px;
-  color: #334155;
+  color: var(--color-text-secondary);
 }
 
 .contact-error {
   margin-top: 14px;
-  color: #c62828;
+  color: var(--color-error);
   font-weight: 600;
 }
 

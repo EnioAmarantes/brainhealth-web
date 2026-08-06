@@ -9,7 +9,7 @@
   position: relative;
   min-height: 100vh;
   padding: 0;
-  background: linear-gradient(135deg, #5b6fe8 0%, #4f46e5 55%, #4338ca 100%);
+  background: var(--gradient-page);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -44,7 +44,7 @@
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: rgba(15, 23, 42, 0.42);
+  background: rgba(28, 52, 64, 0.42);
   backdrop-filter: blur(3px);
   z-index: 1400;
 }
@@ -77,8 +77,8 @@
   height: 44px;
   border-radius: 50%;
   margin: 0 auto;
-  border: 4px solid rgba(102, 126, 234, 0.2);
-  border-top-color: #667eea;
+  border: 4px solid rgba(47, 111, 143, 0.22);
+  border-top-color: var(--color-primary);
   animation: spin 0.9s linear infinite;
 }
 
@@ -108,13 +108,13 @@ h1 {
 .progress {
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, #667eea, #764ba2);
+  background: var(--gradient-hero);
 }
 
 .template-notice {
   margin: 0 0 16px;
   font-size: 13px;
-  color: #312e81;
+  color: var(--color-primary-strong);
   text-align: center;
 }
 
@@ -166,23 +166,23 @@ form {
 }
 
 .lead-field.field-invalid input {
-  border-color: #e11d48;
-  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(194, 65, 65, 0.14);
 }
 
 .lead-field.field-invalid select {
-  border-color: #e11d48;
-  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(194, 65, 65, 0.14);
 }
 
 .lead-field.field-valid input {
-  border-color: #16a34a;
-  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+  border-color: var(--color-success);
+  box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.12);
 }
 
 .lead-field.field-valid select {
-  border-color: #16a34a;
-  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+  border-color: var(--color-success);
+  box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.12);
 }
 
 .gender-field {
@@ -197,21 +197,21 @@ form {
   display: block;
   margin-bottom: 16px;
   font-weight: 700;
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 16px;
   line-height: 1.4;
 }
 
 .required {
-  color: #ff6b6b;
+  color: var(--color-error);
 }
 
 .question-group select,
 .question-group textarea {
   width: 100%;
   padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   font-size: 16px;
   box-sizing: border-box;
 }
@@ -237,18 +237,18 @@ form {
 }
 
 .question-group textarea.field-invalid {
-  border-color: #e11d48;
-  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(194, 65, 65, 0.14);
 }
 
 .question-group textarea.field-valid {
-  border-color: #16a34a;
-  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+  border-color: var(--color-success);
+  box-shadow: 0 0 0 3px rgba(37, 111, 70, 0.14);
 }
 
 .char-count {
   margin-top: 8px;
-  color: #8a94a6;
+  color: var(--color-text-muted);
   font-size: 12px;
 }
 
@@ -339,7 +339,7 @@ form {
       margin: 0;
       font-size: 14px;
       font-weight: 400;
-      color: #555;
+      color: var(--color-text-secondary);
       cursor: pointer;
       min-width: 44px;
       line-height: 1.3;
@@ -366,7 +366,7 @@ form {
   justify-content: space-between;
   margin-bottom: 6px;
   font-size: 12px;
-  color: #5f6b7a;
+  color: var(--color-text-secondary);
 }
 
 .intensity-bar {
@@ -390,17 +390,17 @@ form {
 }
 
 .consent-section {
-  background: #f8fbff;
+  background: #f4f8f6;
   padding: 16px;
   border-radius: var(--radius-md);
-  border: 1px solid #e0e7ff;
+  border: 1px solid #d7e6de;
   margin-top: 32px;
   margin-bottom: 24px;
 }
 
 .consent-section.field-invalid {
-  border-color: #e11d48;
-  background: #fff5f7;
+  border-color: var(--color-error);
+  background: #fff2f2;
 }
 
 .ai-result {
@@ -434,8 +434,8 @@ form {
 }
 
 .consent-section.field-valid {
-  border-color: #16a34a;
-  background: #f6fff8;
+  border-color: var(--color-success);
+  background: #f1faf5;
 }
 
 .consent-item {
@@ -443,7 +443,7 @@ form {
   align-items: flex-start;
   gap: 12px;
   margin: 0;
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -457,7 +457,7 @@ form {
 
 button {
   margin-top: 8px;
-  background: linear-gradient(135deg, #4f46e5, #4338ca);
+  background: var(--gradient-hero);
   color: #fff;
   border: 0;
   border-radius: var(--radius-md);
@@ -488,7 +488,7 @@ button:disabled {
 .result {
   margin-top: 24px;
   padding-top: 16px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--color-border);
 }
 
 .status {
