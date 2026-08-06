@@ -1,5 +1,5 @@
 <div class="questionnaire-container">
-  <section class="questionnaire-box">
+    <section class="questionnaire-box" [class.interaction-blocked]="isProcessing()">
     <div class="progress-bar">
       <div class="progress"></div>
     </div>
@@ -77,57 +77,10 @@
             />
         </div>
 
-        <button type="submit" [disabled]="submitting() || questionnaireForm.invalid">
-            {{ submitting() ? 'Enviando...' : 'Analisar com IA' }}
+        <button type="submit" [disabled]="isProcessing() || questionnaireForm.invalid">
+            {{ isProcessing() ? 'Processando...' : 'Analisar com IA' }}
         </button>
         </form>
-    }
-    @if (submissionResult(); as result) {
-        <section class="result">
-            <h3>Resultado do questionario</h3>
-            <p><strong>Tipo:</strong> {{ result.type }}</p>
-            <p><strong>Pontuacao:</strong> {{ result.totalScore ?? '-' }}</p>
-            <p><strong>Classificacao:</strong> {{ result.result ?? '-' }}</p>
-            <p><strong>Recomendacao:</strong> {{ result.recommendations ?? '-' }}</p>
-            <p><strong>Concluido em:</strong> {{ result.completedAt | date: 'dd/MM/yyyy HH:mm' }}</p>
-        </section>
-    }
-
-    @if (aiRecommendationLoading()) {
-        <section class="result ai-result">
-            <h3>Avaliacao de IA</h3>
-            <p>Processando analise e buscando profissionais disponiveis...</p>
-        </section>
-    }
-
-    @if (aiRecommendation(); as recommendation) {
-        <section class="result ai-result">
-            <h3>Avaliacao de IA</h3>
-            <p><strong>Sintese:</strong> {{ recommendation.problemSynthesis }}</p>
-            <p><strong>Urgencia:</strong> {{ recommendation.urgencyLevel }}</p>
-            <p><strong>Especialidades sugeridas:</strong> {{ recommendation.recommendedSpecialties.join(', ') }}</p>
-            <p><strong>Orientacao:</strong> {{ recommendation.generalRecommendations ?? '-' }}</p>
-
-            <h4>Profissionais disponiveis</h4>
-
-            @if (recommendation.recommendedProfessionals.length === 0) {
-                <p>Nenhum profissional disponivel com aderencia ao perfil no momento.</p>
-            } @else {
-                <div class="professionals-grid">
-                    @for (professional of recommendation.recommendedProfessionals; track professional.id) {
-                        <article class="professional-card">
-                            <h5>{{ professional.name }}</h5>
-                            <p><strong>Especialidades:</strong> {{ professional.specialties }}</p>
-                            <p><strong>Local:</strong> {{ professional.location }}</p>
-                            <p><strong>Compatibilidade:</strong> {{ professional.compatibilityScore }}%</p>
-                            <p><strong>Avaliacao:</strong> {{ professional.averageRating }}</p>
-                            <p><strong>Consulta:</strong> R$ {{ professional.consultationPrice }}</p>
-                            <p>{{ professional.recommendationReason ?? '' }}</p>
-                        </article>
-                    }
-                </div>
-            }
-        </section>
     }
 
     <app-field-error
@@ -140,4 +93,14 @@
         [isErrorVisible]="submitError().length > 0"
     />
   </section>
+
+    @if (isProcessing()) {
+        <div class="loading-overlay" role="dialog" aria-modal="true" aria-live="polite" aria-label="Analise em andamento">
+            <div class="loading-modal">
+                <div class="spinner" aria-hidden="true"></div>
+                <h3>Analisando com IA</h3>
+                <p>{{ loadingMessage() }}</p>
+            </div>
+        </div>
+    }
 </div>

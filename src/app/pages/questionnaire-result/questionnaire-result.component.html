@@ -1,0 +1,65 @@
+<div class="results-container">
+  <section class="results-box">
+    <div class="results-header">
+      <h1>Profissionais Recomendados</h1>
+      <p class="subtitle">Escolha o profissional ideal para continuar seu cuidado</p>
+      <p class="ai-disclaimer">
+        Recomendação assistida por IA para triagem inicial. Não substitui avaliação clínica individual.
+      </p>
+
+      <button type="button" class="back-button" (click)="navigateBack()">
+        ← Voltar para a triagem
+      </button>
+    </div>
+
+    @if (recommendation(); as data) {
+      <section class="summary-card">
+        <h2>Resumo da análise</h2>
+        <p><strong>Tipo:</strong> {{ questionnaireType() || '-' }}</p>
+        <p><strong>Pontuação:</strong> {{ questionnaireScore() ?? '-' }}</p>
+        <p><strong>Síntese:</strong> {{ data.problemSynthesis }}</p>
+        <p><strong>Urgência:</strong> {{ data.urgencyLevel }}</p>
+        <p><strong>Especialidades:</strong> {{ data.recommendedSpecialties.join(', ') }}</p>
+        <p><strong>Orientação:</strong> {{ data.generalRecommendations ?? '-' }}</p>
+      </section>
+
+      @if (data.recommendedProfessionals.length === 0) {
+        <section class="empty-state">
+          <p>Nenhum profissional disponível com aderência ao perfil no momento.</p>
+        </section>
+      } @else {
+        <section class="professionals-grid">
+          @for (professional of data.recommendedProfessionals; track professional.id) {
+            <article class="professional-card">
+              <header class="professional-header">
+                <div>
+                  <h3>{{ professional.name }}</h3>
+                  <p class="specialties">{{ professional.specialties }}</p>
+                </div>
+                <span class="compatibility">{{ professional.compatibilityScore }}%</span>
+              </header>
+
+              <div class="professional-body">
+                <p><strong>Local:</strong> {{ professional.location }}</p>
+                <p><strong>Avaliação:</strong> {{ professional.averageRating }}</p>
+                <p><strong>Preço:</strong> R$ {{ professional.consultationPrice }}</p>
+                <p><strong>Pacientes:</strong> {{ professional.totalPatients }}</p>
+                <p><strong>Motivo:</strong> {{ professional.recommendationReason ?? '-' }}</p>
+              </div>
+
+              <div class="professional-actions">
+                <button type="button" class="whatsapp-button" (click)="startWhatsAppContact(professional)">
+                  Falar no WhatsApp
+                </button>
+              </div>
+            </article>
+          }
+        </section>
+      }
+    }
+
+    @if (contactErrorMessage().length > 0) {
+      <p class="contact-error">{{ contactErrorMessage() }}</p>
+    }
+  </section>
+</div>

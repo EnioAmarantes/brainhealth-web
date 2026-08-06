@@ -2,17 +2,18 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
+import { Router } from '@angular/router';
 import {
   QuestionType,
   QuestionnaireAnswerResponse,
   QuestionnaireTemplate,
   QuestionItem,
   QuestionOption,
-  BackendQuestionnaireQuestionsPayload,
-  RecommendedProfessionalsResponse
+  BackendQuestionnaireQuestionsPayload
 } from '@app/models/questionnaire.model';
 import { QuestionnaireService } from '@app/services/questionnaire.service';
 import { AiAnalysisService } from '@app/services/ai-analysis.service';
+import { QuestionnaireResultSessionService } from '@app/services/questionnaire-result-session.service';
 import { FieldErrorComponent } from "@app/components/field-error.component";
 import { QuestionGroupComponent } from "@app/components/question-group/question-group.component";
 
@@ -34,8 +35,6 @@ export class QuestionnaireScreenComponent implements OnInit {
   readonly submitting = signal<boolean>(false);
   readonly templateError = signal<string>('');
   readonly submitError = signal<string>('');
-  readonly submissionResult = signal<QuestionnaireAnswerResponse | null>(null);
-  readonly aiRecommendation = signal<RecommendedProfessionalsResponse | null>(null);
   readonly aiRecommendationLoading = signal<boolean>(false);
   readonly aiRecommendationError = signal<string>('');
 
@@ -49,7 +48,9 @@ export class QuestionnaireScreenComponent implements OnInit {
   constructor(
     private readonly fb: FormBuilder,
     private readonly questionnaireService: QuestionnaireService,
-    private readonly aiAnalysisService: AiAnalysisService
+    private readonly aiAnalysisService: AiAnalysisService,
+    private readonly resultSessionService: QuestionnaireResultSessionService,
+    private readonly router: Router
   ) {}
 
   ngOnInit(): void {
@@ -314,10 +315,20 @@ export class QuestionnaireScreenComponent implements OnInit {
     return !!control && control.valid && (control.dirty || control.touched);
   }
 
+  isProcessing(): boolean {
+    return this.submitting() || this.aiRecommendationLoading();
+  }
+
+  loadingMessage(): string {
+    if (this.submitting()) {
+      return 'Estamos enviando suas respostas com seguranca.';
+    }
+
+    return 'A IA esta analisando seu perfil e buscando os melhores profissionais.';
+  }
+
   onSubmit(template: QuestionnaireTemplate): void {
     this.submitError.set('');
-    this.submissionResult.set(null);
-    this.aiRecommendation.set(null);
     this.aiRecommendationError.set('');
 
     if (this.questionnaireForm.invalid) {
@@ -362,8 +373,7 @@ export class QuestionnaireScreenComponent implements OnInit {
       .pipe(finalize(() => this.submitting.set(false)))
       .subscribe({
         next: response => {
-          this.submissionResult.set(response);
-          this.runAiRecommendation(freeTextDescription, response);
+          this.runAiRecommendation(freeTextDescription, response, fullName);
         },
         error: () => {
           this.submitError.set('Falha ao enviar questionario. Verifique os dados e tente novamente.');
@@ -371,7 +381,10 @@ export class QuestionnaireScreenComponent implements OnInit {
       });
   }
 
-  private runAiRecommendation(description: string, result: QuestionnaireAnswerResponse): void {
+  private runAiRecommendation(
+    description: string,
+    result: QuestionnaireAnswerResponse,
+    patientName: string): void {
     const cleanDescription = description.trim();
 
     if (cleanDescription.length === 0) {
@@ -396,7 +409,15 @@ export class QuestionnaireScreenComponent implements OnInit {
       .pipe(finalize(() => this.aiRecommendationLoading.set(false)))
       .subscribe({
         next: response => {
-          this.aiRecommendation.set(response);
+          this.resultSessionService.save({
+            recommendation: response,
+            patientDescription: cleanDescription,
+            patientName,
+            questionnaireType: result.type,
+            questionnaireScore: result.totalScore ?? null
+          });
+
+          void this.router.navigate(['/questionnaire/result']);
         },
         error: () => {
           this.aiRecommendationError.set('Nao foi possivel carregar a recomendacao de profissionais neste momento.');

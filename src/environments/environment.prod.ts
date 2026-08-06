@@ -1,6 +1,7 @@
 export const environment = {
   production: true,
   apiUrl: 'https://meunegociosimples.net/api',
+  whatsAppDefaultNumber: '5543996903617',
   appUrl: 'https://meunegociosimples.net',
   googleClientId: 'YOUR_GOOGLE_CLIENT_ID',
   appleClientId: 'YOUR_APPLE_CLIENT_ID',

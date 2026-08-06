@@ -1,6 +1,7 @@
 export const environment = {
   production: true,
   apiUrl: 'http://localhost:5000/api',
+  whatsAppDefaultNumber: '5543996903617',
   appUrl: 'http://localhost:4200',
   googleClientId: 'YOUR_GOOGLE_CLIENT_ID',
   appleClientId: 'YOUR_APPLE_CLIENT_ID',
