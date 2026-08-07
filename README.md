@@ -1,53 +1,69 @@
 # Frontend Web - Angular
 
-## Configuração
+## Stack
 
-### Setup Inicial
+- Angular 18
+- Angular Material
+- RxJS
+
+## Arquitetura
+
+O frontend está organizado por responsabilidades de interface, com separação entre páginas, componentes reutilizáveis e serviços de integração.
+
+## Estrutura principal
+
+```
+frontend-web/src/app/
+├── components/
+│   ├── question-group/
+│   │   ├── components/
+│   │   └── strategies/
+│   ├── checkbox.component.ts
+│   ├── field-error.component.ts
+│   └── required-span.component.ts
+├── models/
+│   └── questionnaire.model.ts
+├── pages/
+│   ├── questionnaire/
+│   └── questionnaire-result/
+├── services/
+│   ├── questionnaire.service.ts
+│   ├── ai-analysis.service.ts
+│   ├── questionnaire-result-session.service.ts
+│   └── whatsapp.service.ts
+├── app.routes.ts
+└── app.config.ts
+```
+
+## Fluxo principal de triagem
+
+1. Página de questionário carrega template pela API.
+2. Usuário responde e envia formulário.
+3. Frontend chama `POST /api/Questionnaires/submit`.
+4. Backend persiste triagem (questionário, lead e assessment) antes da resposta.
+5. Frontend usa o retorno para montar contexto e buscar recomendação de profissionais.
+6. Resultado é salvo em sessão (`questionnaire-result-session.service`) e exibido na página de resultado.
+
+## Responsabilidades por camada de UI
+
+- `pages`: composição de fluxo e navegação.
+- `components`: blocos reutilizáveis de formulário e exibição.
+- `services`: comunicação HTTP e estado transitório do resultado.
+- `models`: contratos tipados com backend.
+
+## Execução local
 
 ```bash
-# Instalar Angular CLI
-npm install -g @angular/cli
-
-# Criar projeto
-ng new brain-health-web
-cd brain-health-web
-
-# Servir localmente
-ng serve
-# Navegue para http://localhost:4200/
+cd frontend-web
+npm install
+npm start
 ```
 
-### Estrutura do Projeto
+Aplicação disponível em `http://localhost:4200` no modo dev local.
 
-```
-src/
-├── app/
-│   ├── components/
-│   ├── services/
-│   ├── models/
-│   ├── pages/
-│   └── app.module.ts
-├── assets/
-├── styles/
-├── index.html
-└── main.ts
-```
-
-### Dependências Principais
-
-- Angular Material (UI Components)
-- RxJS (Reactive Programming)
-- HttpClient (Chamadas HTTP)
-
-### Build para Produção
+## Build
 
 ```bash
-ng build --configuration production
+cd frontend-web
+npm run build -- --configuration production
 ```
-
-## Funcionalidades Planejadas
-
-- [ ] Dashboard de monitoramento
-- [ ] Gráficos de análise
-- [ ] Relatórios
-- [ ] Configurações de usuário
